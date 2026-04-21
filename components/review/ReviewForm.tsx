@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { BADGE_ICONS } from "@/lib/badges/badge-utils";
 import StarRating from "./StarRating";
 import { Upload, X, Film, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -172,6 +173,13 @@ export default function ReviewForm({
       }
 
       toast.success("Avaliação criada!");
+      for (const badge of reviewRes.data.newBadges ?? []) {
+        toast.success(`Novo selo: ${badge.label}!`, {
+          icon: BADGE_ICONS[badge.slug] ?? "🏅",
+          duration: 6000,
+          style: { background: "#fef3c7", border: "1px solid #f59e0b", color: "#92400e" },
+        });
+      }
       router.push(`/app/restaurants/${restaurantId}`);
       router.refresh();
     } catch (err) {

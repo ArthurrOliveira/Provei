@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/app/actions/auth";
-import { getTopVibeTags } from "@/app/actions/reviews";
-import { getFriendIds } from "@/app/actions/social";
+import { getTopVibeTags, getAllVibeTags } from "@/app/actions/reviews";
+import { getFriendIds, getFriendsWhoReviewed } from "@/app/actions/social";
 import { getFriendGroups } from "@/app/actions/groups";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import ReviewList from "@/components/review/ReviewList";
 import ReviewListFiltered from "@/components/review/ReviewListFiltered";
 import MediaGallery from "@/components/media/MediaGallery";
+import QuickReviewButton from "@/components/review/QuickReviewModal";
+import FriendsWhoWent from "@/components/restaurants/FriendsWhoWent";
 import { MapPin, Star, PenLine } from "lucide-react";
 
 export default async function RestaurantPage({
@@ -20,21 +22,29 @@ export default async function RestaurantPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [restaurant, currentUser] = await Promise.all([
+  const [restaurant, currentUser, allVibeTagsRes] = await Promise.all([
     prisma.restaurant.findUnique({
       where: { id },
       include: { _count: { select: { reviews: true } } },
     }),
     getCurrentUser(),
+    getAllVibeTags(),
   ]);
+
+  const allVibeTags = allVibeTagsRes.success ? (allVibeTagsRes.data ?? []) : [];
 
   if (!restaurant) notFound();
 
-  const topTagsResult = await getTopVibeTags(id);
-  const topTags = topTagsResult.success ? topTagsResult.data : [];
+  const [topTagsResult, friendIds, groups, friendsData] = await Promise.all([
+    getTopVibeTags(id),
+    currentUser ? getFriendIds(currentUser.id) : Promise.resolve([]),
+    currentUser ? getFriendGroups(currentUser.id) : Promise.resolve([]),
+    currentUser
+      ? getFriendsWhoReviewed(id, currentUser.id)
+      : Promise.resolve(null),
+  ]);
 
-  const friendIds = currentUser ? await getFriendIds(currentUser.id) : [];
-  const groups = currentUser ? await getFriendGroups(currentUser.id) : [];
+  const topTags = topTagsResult.success ? topTagsResult.data : [];
 
   return (
     <div className="space-y-6">
@@ -50,14 +60,25 @@ export default async function RestaurantPage({
           </p>
         </div>
         {currentUser && (
-          <Link href={`/app/restaurants/${id}/review`}>
-            <Button className="bg-orange-600 hover:bg-orange-700 gap-2 flex-shrink-0">
-              <PenLine className="w-4 h-4" />
-              Avaliar
-            </Button>
-          </Link>
+          <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+            <Link href={`/app/restaurants/${id}/review`}>
+              <Button variant="outline" className="border-orange-300 text-orange-600 hover:bg-orange-50 gap-2">
+                <PenLine className="w-4 h-4" />
+                Avaliar
+              </Button>
+            </Link>
+            <QuickReviewButton
+              restaurantId={id}
+              userId={currentUser.id}
+              vibeTags={allVibeTags}
+            />
+          </div>
         )}
       </div>
+
+      {currentUser && friendsData && (
+        <FriendsWhoWent data={friendsData} restaurantId={id} />
+      )}
 
       {topTags.length > 0 && (
         <div>

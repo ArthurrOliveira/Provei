@@ -13,6 +13,7 @@ export type ReviewWithRelations = {
     id: string;
     name: string;
     avatarUrl: string | null;
+    badges: { badge: { slug: string; label: string } }[];
   };
   restaurant: {
     id: string;
@@ -42,4 +43,70 @@ export type VibeTagCount = {
   id: string;
   label: string;
   count: number;
+};
+
+export type FriendReviewSummary = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  rating: number | null;
+  comment: string;
+  vibeTags: string[];
+  reviewId: string;
+  isSelf: boolean;
+  topBadge: { slug: string; label: string } | null;
+};
+
+export type FriendsWhoReviewedResult = {
+  direct: FriendReviewSummary[];
+  fof: FriendReviewSummary[];
+  aggregates: {
+    count: number;
+    avgRating: number | null;
+    topVibeTags: string[];
+  };
+  hasFriendsInApp: boolean;
+};
+
+export type ListSummary = {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  user: { id: string; name: string; avatarUrl: string | null };
+  _count: { items: number; likes: number };
+  thumbnails: string[];
+  isLiked: boolean;
+};
+
+export type ListDetailItem = {
+  restaurantId: string;
+  note: string | null;
+  position: number;
+  restaurant: {
+    id: string;
+    name: string;
+    address: string;
+    topVibeTags: { label: string; count: number }[];
+    thumbnailUrl: string | null;
+  };
+};
+
+export type ListDetail = {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  user: { id: string; name: string; avatarUrl: string | null };
+  _count: { likes: number };
+  isLiked: boolean;
+  items: ListDetailItem[];
 };

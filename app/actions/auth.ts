@@ -8,7 +8,7 @@ export async function getCurrentUser() {
     return {
       id: "preview-user",
       name: "Preview",
-      email: "preview@tastecircle.dev",
+      email: "preview@mangut.dev",
       avatarUrl: null,
       createdAt: new Date(),
     };

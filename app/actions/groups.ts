@@ -102,5 +102,5 @@ export async function getGroupMemberIds(groupId: string): Promise<string[]> {
     where: { groupId },
     select: { userId: true },
   });
-  return members.map((m) => m.userId);
+  return members.map((m: { userId: string }) => m.userId);
 }

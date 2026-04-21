@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["tastecircle"]
+  schemas  = ["mangut"]
 }
 
 model User {
@@ -15,14 +15,17 @@ model User {
   avatarUrl String?
   createdAt DateTime @default(now())
 
-  reviews      Review[]
-  following    Follow[]            @relation("Follower")
-  followers    Follow[]            @relation("Following")
-  mediaLikes   MediaLike[]
-  friendGroups FriendGroup[]
-  groupMembers FriendGroupMember[]
+  reviews         Review[]
+  following       Follow[]            @relation("Follower")
+  followers       Follow[]            @relation("Following")
+  mediaLikes      MediaLike[]
+  friendGroups    FriendGroup[]
+  groupMembers    FriendGroupMember[]
+  badges          UserBadge[]
+  restaurantLists RestaurantList[]
+  listLikes       ListLike[]
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model Follow {
@@ -35,7 +38,7 @@ model Follow {
   following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model Restaurant {
@@ -48,9 +51,10 @@ model Restaurant {
   lng           Float?
   createdAt     DateTime @default(now())
 
-  reviews Review[]
+  reviews   Review[]
+  listItems RestaurantListItem[]
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model Review {
@@ -66,7 +70,7 @@ model Review {
   vibeTags   ReviewVibeTag[]
   media      ReviewMedia[]
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model VibeTag {
@@ -75,7 +79,7 @@ model VibeTag {
 
   reviews ReviewVibeTag[]
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model ReviewVibeTag {
@@ -86,14 +90,14 @@ model ReviewVibeTag {
   vibeTag VibeTag @relation(fields: [vibeTagId], references: [id], onDelete: Cascade)
 
   @@id([reviewId, vibeTagId])
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 enum MediaType {
   IMAGE
   VIDEO
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model ReviewMedia {
@@ -107,7 +111,7 @@ model ReviewMedia {
   review Review      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   likes  MediaLike[]
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model MediaLike {
@@ -119,7 +123,7 @@ model MediaLike {
   media ReviewMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 
   @@id([userId, mediaId])
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model FriendGroup {
@@ -131,7 +135,7 @@ model FriendGroup {
   owner   User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members FriendGroupMember[]
 
-  @@schema("tastecircle")
+  @@schema("mangut")
 }
 
 model FriendGroupMember {
@@ -143,5 +147,82 @@ model FriendGroupMember {
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([groupId, userId])
-  @@schema("tastecircle")
+  @@schema("mangut")
+}
+
+enum BadgeCategory {
+  REVIEWER
+  SOCIAL
+  EXPLORER
+
+  @@schema("mangut")
+}
+
+model Badge {
+  id          String        @id @default(uuid())
+  slug        String        @unique
+  label       String
+  description String
+  iconUrl     String?
+  category    BadgeCategory
+  threshold   Json
+
+  users UserBadge[]
+
+  @@schema("mangut")
+}
+
+model UserBadge {
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@schema("mangut")
+}
+
+model RestaurantList {
+  id            String   @id @default(uuid())
+  userId        String
+  title         String
+  description   String?
+  coverImageUrl String?
+  isPublic      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items RestaurantListItem[]
+  likes ListLike[]
+
+  @@schema("mangut")
+}
+
+model RestaurantListItem {
+  listId       String
+  restaurantId String
+  note         String?
+  position     Int
+  addedAt      DateTime @default(now())
+
+  list       RestaurantList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  restaurant Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@id([listId, restaurantId])
+  @@schema("mangut")
+}
+
+model ListLike {
+  userId    String
+  listId    String
+  createdAt DateTime @default(now())
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list RestaurantList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listId])
+  @@schema("mangut")
 }

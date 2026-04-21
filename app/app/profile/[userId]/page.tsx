@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/app/actions/auth";
-import {
-  getUserProfile,
-  isFollowing,
-  getFollowing,
-} from "@/app/actions/social";
-import { getReviewsByRestaurant } from "@/app/actions/reviews";
+import { getUserProfile, isFollowing } from "@/app/actions/social";
+import { getProfileBadges } from "@/app/actions/badges";
+import { getListsByUser } from "@/app/actions/lists";
 import { prisma } from "@/lib/prisma";
 import ProfileHeader from "@/components/profile/ProfileHeader";
-import ReviewCard from "@/components/review/ReviewCard";
+import BadgesSection from "@/components/profile/BadgesSection";
+import ProfileTabs from "@/components/profile/ProfileTabs";
+import { ReviewWithRelations } from "@/types";
 
 export default async function ProfilePage({
   params,
@@ -23,7 +22,13 @@ export default async function ProfilePage({
     userId = currentUser.id;
   }
 
-  const [profileRes] = await Promise.all([getUserProfile(userId)]);
+  const isOwnProfile = currentUser?.id === userId;
+
+  const [profileRes, badgesData, listsRes] = await Promise.all([
+    getUserProfile(userId),
+    getProfileBadges(userId),
+    getListsByUser(userId, currentUser?.id, isOwnProfile),
+  ]);
 
   if (!profileRes.success || !profileRes.data) notFound();
   const profile = profileRes.data;
@@ -36,7 +41,16 @@ export default async function ProfilePage({
   const reviews = await prisma.review.findMany({
     where: { userId },
     include: {
-      user: { select: { id: true, name: true, avatarUrl: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          badges: {
+            include: { badge: { select: { slug: true, label: true } } },
+          },
+        },
+      },
       restaurant: { select: { id: true, name: true, address: true } },
       vibeTags: { include: { vibeTag: true } },
       media: { take: 1, include: { _count: { select: { likes: true } } } },
@@ -44,6 +58,8 @@ export default async function ProfilePage({
     orderBy: { createdAt: "desc" },
     take: 20,
   });
+
+  const lists = listsRes.success ? (listsRes.data ?? []) : [];
 
   return (
     <div className="space-y-6">
@@ -53,26 +69,15 @@ export default async function ProfilePage({
         isFollowing={following}
       />
 
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Avaliações
-        </h2>
-        {reviews.length === 0 ? (
-          <p className="text-gray-500 text-sm">Nenhuma avaliação ainda.</p>
-        ) : (
-          <div className="space-y-4">
-            {reviews.map((review) => (
-              <ReviewCard
-                key={review.id}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                review={review as any}
-                showRestaurant
-                currentUserId={currentUser?.id}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <BadgesSection badges={badgesData} />
+
+      <ProfileTabs
+        reviews={reviews as ReviewWithRelations[]}
+        lists={lists}
+        isOwnProfile={isOwnProfile}
+        userId={userId}
+        currentUserId={currentUser?.id}
+      />
     </div>
   );
 }

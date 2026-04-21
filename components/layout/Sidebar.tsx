@@ -14,11 +14,13 @@ import {
   User,
   LogOut,
   UtensilsCrossed,
+  BookMarked,
 } from "lucide-react";
 
 const navItems = [
   { href: "/app/feed", label: "Feed", icon: Home },
   { href: "/app/map", label: "Mapa", icon: Map },
+  { href: "/app/lists", label: "Listas", icon: BookMarked },
   { href: "/app/restaurants/search", label: "Restaurantes", icon: Search },
   { href: "/app/friends", label: "Amigos", icon: Users },
   { href: "/app/profile/me", label: "Meu Perfil", icon: User },

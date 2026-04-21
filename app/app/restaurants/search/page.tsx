@@ -26,10 +26,10 @@ export default function RestaurantSearchPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", address: "", observacao: "" });
+  const [form, setForm] = useState({ name: "", address: "", observacao: "", lat: "", lng: "" });
 
   function openCreate() {
-    setForm({ name: query, address: "", observacao: "" });
+    setForm({ name: query, address: "", observacao: "", lat: "", lng: "" });
     setOpen(true);
   }
   const [creating, setCreating] = useState(false);
@@ -51,6 +51,8 @@ export default function RestaurantSearchPage() {
       name: form.name,
       address: form.address,
       observacao: form.observacao || undefined,
+      lat: form.lat ? parseFloat(form.lat) : undefined,
+      lng: form.lng ? parseFloat(form.lng) : undefined,
     });
     setCreating(false);
     if (res.success) {

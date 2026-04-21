@@ -5,9 +5,15 @@ import { getAllVibeTags } from "@/app/actions/reviews";
 import { prisma } from "@/lib/prisma";
 import MapClient from "@/components/map/MapClient";
 
-export default async function MapPage() {
+export default async function MapPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ listId?: string }>;
+}) {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/login");
+
+  const { listId } = await searchParams;
 
   const [friendIds, vibeTagsRes] = await Promise.all([
     getFriendIds(currentUser.id),
@@ -16,18 +22,90 @@ export default async function MapPage() {
 
   const vibeTags = (vibeTagsRes.success ? vibeTagsRes.data : []) ?? [];
 
-  // All restaurants with coordinates; highlight friend reviews when available
+  let listTitle: string | undefined;
+
+  // If filtering by list, fetch only restaurants from that list (with coords)
+  if (listId) {
+    const list = await prisma.restaurantList.findUnique({
+      where: { id: listId },
+      select: { title: true, isPublic: true, userId: true },
+    });
+
+    if (list && (list.isPublic || list.userId === currentUser.id)) {
+      listTitle = list.title;
+
+      const listItems = await prisma.restaurantListItem.findMany({
+        where: {
+          listId,
+          restaurant: { lat: { not: null }, lng: { not: null } },
+        },
+        include: {
+          restaurant: {
+            include: {
+              reviews: {
+                where:
+                  friendIds.length > 0
+                    ? { userId: { in: friendIds } }
+                    : { userId: currentUser.id },
+                include: { vibeTags: { include: { vibeTag: true } } },
+              },
+            },
+          },
+        },
+        orderBy: { position: "asc" },
+      });
+
+      const mapRestaurants = listItems
+        .filter((item) => item.restaurant.lat && item.restaurant.lng)
+        .map((item) => {
+          const r = item.restaurant;
+          const vibeTagCounts: Record<string, { label: string; count: number }> = {};
+          for (const review of r.reviews) {
+            for (const { vibeTag } of review.vibeTags) {
+              if (!vibeTagCounts[vibeTag.id]) {
+                vibeTagCounts[vibeTag.id] = { label: vibeTag.label, count: 0 };
+              }
+              vibeTagCounts[vibeTag.id].count++;
+            }
+          }
+          const topTags = Object.entries(vibeTagCounts)
+            .sort((a, b) => b[1].count - a[1].count)
+            .slice(0, 3)
+            .map(([id, { label, count }]) => ({ id, label, count }));
+
+          return {
+            id: r.id,
+            name: r.name,
+            address: r.address,
+            lat: r.lat!,
+            lng: r.lng!,
+            reviewCount: r.reviews.length,
+            topTags,
+          };
+        });
+
+      return (
+        <div className="-mx-4 -mt-4 md:-mx-6 md:-mt-6">
+          <MapClient
+            restaurants={mapRestaurants}
+            vibeTags={vibeTags}
+            listTitle={listTitle}
+          />
+        </div>
+      );
+    }
+  }
+
+  // Default: all restaurants with coordinates
   const restaurants = await prisma.restaurant.findMany({
-    where: {
-      lat: { not: null },
-      lng: { not: null },
-    },
+    where: { lat: { not: null }, lng: { not: null } },
     include: {
       reviews: {
-        where: friendIds.length > 0 ? { userId: { in: friendIds } } : { userId: currentUser.id },
-        include: {
-          vibeTags: { include: { vibeTag: true } },
-        },
+        where:
+          friendIds.length > 0
+            ? { userId: { in: friendIds } }
+            : { userId: currentUser.id },
+        include: { vibeTags: { include: { vibeTag: true } } },
       },
     },
   });
@@ -60,10 +138,7 @@ export default async function MapPage() {
 
   return (
     <div className="-mx-4 -mt-4 md:-mx-6 md:-mt-6">
-      <MapClient
-        restaurants={mapRestaurants}
-        vibeTags={vibeTags}
-      />
+      <MapClient restaurants={mapRestaurants} vibeTags={vibeTags} />
     </div>
   );
 }

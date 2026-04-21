@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { ActionResult } from "@/types";
+import { checkAndAwardBadges } from "@/lib/badges/badge-engine";
 
 export async function createReviewMedia(data: {
   reviewId: string;
@@ -39,6 +40,14 @@ export async function toggleMediaLike(
       });
     } else {
       await prisma.mediaLike.create({ data: { userId, mediaId } });
+      // Check opinion-maker badge for the media owner
+      const media = await prisma.reviewMedia.findUnique({
+        where: { id: mediaId },
+        select: { review: { select: { userId: true } } },
+      });
+      if (media?.review.userId) {
+        await checkAndAwardBadges(media.review.userId);
+      }
     }
 
     const count = await prisma.mediaLike.count({ where: { mediaId } });

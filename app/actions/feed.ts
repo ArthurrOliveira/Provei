@@ -4,6 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { getFriendIds, getFriendsOfFriendsIds } from "./social";
 import { ReviewWithRelations } from "@/types";
 
+const USER_WITH_BADGES_SELECT = {
+  id: true,
+  name: true,
+  avatarUrl: true,
+  badges: { include: { badge: { select: { slug: true, label: true } } } },
+} as const;
+
 export async function getFeed(params: {
   userId: string;
   mode: "friends" | "fof";
@@ -35,7 +42,7 @@ export async function getFeed(params: {
   const reviews = await prisma.review.findMany({
     where,
     include: {
-      user: { select: { id: true, name: true, avatarUrl: true } },
+      user: { select: USER_WITH_BADGES_SELECT },
       restaurant: { select: { id: true, name: true, address: true } },
       vibeTags: { include: { vibeTag: true } },
       media: {

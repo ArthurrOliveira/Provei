@@ -23,9 +23,11 @@ type MapRestaurant = {
 export default function MapClient({
   restaurants,
   vibeTags,
+  listTitle,
 }: {
   restaurants: MapRestaurant[];
   vibeTags: VibeTag[];
+  listTitle?: string;
 }) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showSheet, setShowSheet] = useState(false);
@@ -45,8 +47,14 @@ export default function MapClient({
 
   return (
     <div className="relative h-[calc(100vh-4rem)] md:h-[calc(100vh-2rem)]">
+      {/* List filter banner */}
+      {listTitle && (
+        <div className="absolute top-3 left-3 right-3 z-30 bg-orange-500 text-white text-xs font-semibold rounded-full px-4 py-1.5 shadow text-center">
+          Lista: {listTitle} · {restaurants.length} lugares
+        </div>
+      )}
       {/* Vibe tag filter bar */}
-      <div className="absolute top-3 left-3 right-3 z-20 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow flex gap-1.5 overflow-x-auto">
+      <div className={cn("absolute left-3 right-3 z-20 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow flex gap-1.5 overflow-x-auto", listTitle ? "top-12" : "top-3")}>
         {vibeTags.map((tag) => (
           <button
             key={tag.id}

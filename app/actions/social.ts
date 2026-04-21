@@ -1,7 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { ActionResult } from "@/types";
+import { ActionResult, FriendsWhoReviewedResult } from "@/types";
+import { checkAndAwardBadges } from "@/lib/badges/badge-engine";
+import { getTopBadge } from "@/lib/badges/badge-utils";
 
 export async function followUser(
   followerId: string,
@@ -9,6 +11,8 @@ export async function followUser(
 ): Promise<ActionResult> {
   try {
     await prisma.follow.create({ data: { followerId, followingId } });
+    // Check if the person being followed unlocked influencer badge
+    await checkAndAwardBadges(followingId);
     return { success: true, data: undefined };
   } catch (e) {
     return { success: false, error: String(e) };
@@ -118,4 +122,103 @@ export async function getUserProfile(userId: string) {
   } catch (e) {
     return { success: false, error: String(e) };
   }
+}
+
+export async function getFriendsWhoReviewed(
+  restaurantId: string,
+  userId: string
+): Promise<FriendsWhoReviewedResult> {
+  const [directIds, fofIds, followCount] = await Promise.all([
+    getFriendIds(userId),
+    getFriendsOfFriendsIds(userId),
+    prisma.follow.count({ where: { followerId: userId } }),
+  ]);
+
+  const hasFriendsInApp = followCount > 0;
+  const allIds = [...new Set([...directIds, ...fofIds, userId])];
+
+  if (allIds.length === 0) {
+    return {
+      direct: [],
+      fof: [],
+      aggregates: { count: 0, avgRating: null, topVibeTags: [] },
+      hasFriendsInApp,
+    };
+  }
+
+  const reviews = await prisma.review.findMany({
+    where: { restaurantId, userId: { in: allIds } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          badges: { include: { badge: { select: { slug: true, label: true } } } },
+        },
+      },
+      vibeTags: { include: { vibeTag: { select: { label: true } } } },
+    },
+    orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+  });
+
+  // One review per user — first encountered is highest-rated (due to sort)
+  const byUser = new Map<string, (typeof reviews)[0]>();
+  for (const r of reviews) {
+    if (!byUser.has(r.userId)) byUser.set(r.userId, r);
+  }
+
+  const directSet = new Set(directIds);
+  const fofSet = new Set(fofIds);
+
+  const toSummary = (r: (typeof reviews)[0], isSelf: boolean) => ({
+    userId: r.user.id,
+    name: r.user.name,
+    avatarUrl: r.user.avatarUrl,
+    rating: r.rating,
+    comment: r.comment,
+    vibeTags: r.vibeTags.map((vt) => vt.vibeTag.label),
+    reviewId: r.id,
+    isSelf,
+    topBadge: getTopBadge(r.user.badges.map((ub) => ub.badge)),
+  });
+
+  const selfEntry = byUser.get(userId);
+  const directEntries = [...byUser.values()].filter((r) =>
+    directSet.has(r.userId)
+  );
+  const fofEntries = [...byUser.values()].filter((r) => fofSet.has(r.userId));
+
+  // Self appears first in the direct list
+  const direct = [
+    ...(selfEntry ? [toSummary(selfEntry, true)] : []),
+    ...directEntries.map((r) => toSummary(r, false)),
+  ];
+  const fof = fofEntries.map((r) => toSummary(r, false));
+
+  // Aggregates over direct friends + self
+  const forAgg = selfEntry ? [selfEntry, ...directEntries] : directEntries;
+  const ratings = forAgg.map((r) => r.rating).filter((v): v is number => v !== null);
+  const avgRating =
+    ratings.length > 0
+      ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+      : null;
+
+  const tagCounts: Record<string, number> = {};
+  forAgg.forEach((r) => {
+    r.vibeTags.forEach((vt) => {
+      tagCounts[vt.vibeTag.label] = (tagCounts[vt.vibeTag.label] ?? 0) + 1;
+    });
+  });
+  const topVibeTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([label]) => label);
+
+  return {
+    direct,
+    fof,
+    aggregates: { count: forAgg.length, avgRating, topVibeTags },
+    hasFriendsInApp,
+  };
 }

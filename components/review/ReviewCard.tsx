@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatRelativeTime, truncate } from "@/lib/utils";
+import { Zap } from "lucide-react";
+import { BADGE_ICONS, getTopBadge } from "@/lib/badges/badge-utils";
 import StarRating from "./StarRating";
 
 export default function ReviewCard({
@@ -17,9 +19,17 @@ export default function ReviewCard({
   currentUserId?: string;
 }) {
   const firstMedia = review.media?.[0];
+  const isQuickReview = !review.comment || review.comment.trim() === "";
+  const topBadge = getTopBadge(review.user.badges?.map((ub) => ub.badge) ?? []);
 
   return (
-    <Card className="overflow-hidden hover:border-orange-200 transition-colors">
+    <Card
+      className={
+        isQuickReview
+          ? "overflow-hidden hover:border-amber-200 transition-colors border-amber-100 bg-amber-50/30"
+          : "overflow-hidden hover:border-orange-200 transition-colors"
+      }
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Link href={`/app/profile/${review.user.id}`}>
@@ -33,16 +43,24 @@ export default function ReviewCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <div>
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                 <Link
                   href={`/app/profile/${review.user.id}`}
                   className="font-medium text-sm text-gray-900 hover:text-orange-600"
                 >
                   {review.user.name}
                 </Link>
+                {topBadge && (
+                  <span
+                    title={topBadge.label}
+                    className="inline-flex items-center gap-0.5 text-xs text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full font-medium"
+                  >
+                    <span>{BADGE_ICONS[topBadge.slug] ?? "🏅"}</span>
+                    <span className="hidden sm:inline">{topBadge.label}</span>
+                  </span>
+                )}
                 {showRestaurant && (
                   <span className="text-sm text-gray-500">
-                    {" "}
                     em{" "}
                     <Link
                       href={`/app/restaurants/${review.restaurant.id}`}
@@ -50,6 +68,12 @@ export default function ReviewCard({
                     >
                       {review.restaurant.name}
                     </Link>
+                  </span>
+                )}
+                {isQuickReview && (
+                  <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full font-medium">
+                    <Zap className="w-3 h-3" />
+                    Rápida
                   </span>
                 )}
               </div>
@@ -62,9 +86,11 @@ export default function ReviewCard({
               <StarRating value={review.rating} readonly size="sm" />
             )}
 
-            <p className="text-sm text-gray-700 mt-1 leading-relaxed">
-              {truncate(review.comment, 200)}
-            </p>
+            {!isQuickReview && (
+              <p className="text-sm text-gray-700 mt-1 leading-relaxed">
+                {truncate(review.comment, 200)}
+              </p>
+            )}
 
             {review.vibeTags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
@@ -72,7 +98,11 @@ export default function ReviewCard({
                   <Badge
                     key={vibeTag.id}
                     variant="secondary"
-                    className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    className={
+                      isQuickReview
+                        ? "text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 py-1 px-2.5"
+                        : "text-xs bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    }
                   >
                     {vibeTag.label}
                   </Badge>
@@ -81,15 +111,25 @@ export default function ReviewCard({
             )}
 
             {firstMedia && (
-              <div className="mt-3 rounded-lg overflow-hidden w-full max-w-xs">
+              <div
+                className={
+                  isQuickReview
+                    ? "mt-3 rounded-xl overflow-hidden w-full"
+                    : "mt-3 rounded-lg overflow-hidden w-full max-w-xs"
+                }
+              >
                 <Link href={`/app/restaurants/${review.restaurantId}`}>
                   {firstMedia.type === "IMAGE" ? (
                     <Image
                       src={firstMedia.url}
                       alt="Foto da review"
-                      width={320}
-                      height={200}
-                      className="w-full h-40 object-cover hover:opacity-90 transition-opacity"
+                      width={isQuickReview ? 480 : 320}
+                      height={isQuickReview ? 280 : 200}
+                      className={
+                        isQuickReview
+                          ? "w-full h-52 object-cover hover:opacity-90 transition-opacity rounded-xl"
+                          : "w-full h-40 object-cover hover:opacity-90 transition-opacity"
+                      }
                     />
                   ) : (
                     <div className="relative">

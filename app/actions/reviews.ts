@@ -2,6 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { ActionResult, ReviewWithRelations, VibeTagCount } from "@/types";
+import { checkAndAwardBadges, BadgeInfo } from "@/lib/badges/badge-engine";
+
+const USER_WITH_BADGES_SELECT = {
+  id: true,
+  name: true,
+  avatarUrl: true,
+  badges: { include: { badge: { select: { slug: true, label: true } } } },
+} as const;
 
 export async function createReview(data: {
   userId: string;
@@ -9,7 +17,7 @@ export async function createReview(data: {
   rating?: number;
   comment: string;
   vibeTagIds: string[];
-}): Promise<ActionResult<{ id: string }>> {
+}): Promise<ActionResult<{ id: string; newBadges: BadgeInfo[] }>> {
   try {
     const review = await prisma.review.create({
       data: {
@@ -22,7 +30,8 @@ export async function createReview(data: {
         },
       },
     });
-    return { success: true, data: { id: review.id } };
+    const newBadges = await checkAndAwardBadges(data.userId);
+    return { success: true, data: { id: review.id, newBadges } };
   } catch (e) {
     return { success: false, error: String(e) };
   }
@@ -35,7 +44,7 @@ export async function getReviewsByRestaurant(
     const reviews = await prisma.review.findMany({
       where: { restaurantId },
       include: {
-        user: { select: { id: true, name: true, avatarUrl: true } },
+        user: { select: USER_WITH_BADGES_SELECT },
         restaurant: { select: { id: true, name: true, address: true } },
         vibeTags: { include: { vibeTag: true } },
         media: { include: { _count: { select: { likes: true } } } },
@@ -56,7 +65,7 @@ export async function getReviewsByRestaurantFiltered(
     const reviews = await prisma.review.findMany({
       where: { restaurantId, userId: { in: userIds } },
       include: {
-        user: { select: { id: true, name: true, avatarUrl: true } },
+        user: { select: USER_WITH_BADGES_SELECT },
         restaurant: { select: { id: true, name: true, address: true } },
         vibeTags: { include: { vibeTag: true } },
         media: { include: { _count: { select: { likes: true } } } },
@@ -101,6 +110,34 @@ export async function getAllVibeTags() {
   try {
     const tags = await prisma.vibeTag.findMany({ orderBy: { label: "asc" } });
     return { success: true, data: tags };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+}
+
+export async function createQuickReview(data: {
+  userId: string;
+  restaurantId: string;
+  vibeTagIds: string[];
+  rating?: number;
+}): Promise<ActionResult<{ id: string; newBadges: BadgeInfo[] }>> {
+  try {
+    if (data.vibeTagIds.length === 0) {
+      return { success: false, error: "Selecione ao menos uma vibe tag" };
+    }
+    const review = await prisma.review.create({
+      data: {
+        userId: data.userId,
+        restaurantId: data.restaurantId,
+        rating: data.rating ?? null,
+        comment: "",
+        vibeTags: {
+          create: data.vibeTagIds.map((vibeTagId) => ({ vibeTagId })),
+        },
+      },
+    });
+    const newBadges = await checkAndAwardBadges(data.userId);
+    return { success: true, data: { id: review.id, newBadges } };
   } catch (e) {
     return { success: false, error: String(e) };
   }
