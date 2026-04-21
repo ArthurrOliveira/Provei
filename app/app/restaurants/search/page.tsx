@@ -26,7 +26,12 @@ export default function RestaurantSearchPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", address: "", lat: "", lng: "" });
+  const [form, setForm] = useState({ name: "", address: "", observacao: "" });
+
+  function openCreate() {
+    setForm({ name: query, address: "", observacao: "" });
+    setOpen(true);
+  }
   const [creating, setCreating] = useState(false);
 
   async function handleSearch(e: React.FormEvent) {
@@ -45,8 +50,7 @@ export default function RestaurantSearchPage() {
     const res = await createRestaurant({
       name: form.name,
       address: form.address,
-      lat: form.lat ? parseFloat(form.lat) : undefined,
-      lng: form.lng ? parseFloat(form.lng) : undefined,
+      observacao: form.observacao || undefined,
     });
     setCreating(false);
     if (res.success) {
@@ -99,7 +103,7 @@ export default function RestaurantSearchPage() {
               </p>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="outline" className="gap-2" onClick={openCreate}>
                     <Plus className="w-4 h-4" />
                     Cadastrar &quot;{query}&quot;
                   </Button>
@@ -112,7 +116,7 @@ export default function RestaurantSearchPage() {
                     <div>
                       <Label>Nome</Label>
                       <Input
-                        value={form.name || query}
+                        value={form.name}
                         onChange={(e) =>
                           setForm({ ...form, name: e.target.value })
                         }
@@ -129,29 +133,15 @@ export default function RestaurantSearchPage() {
                         required
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label>Latitude (opcional)</Label>
-                        <Input
-                          type="number"
-                          step="any"
-                          value={form.lat}
-                          onChange={(e) =>
-                            setForm({ ...form, lat: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Longitude (opcional)</Label>
-                        <Input
-                          type="number"
-                          step="any"
-                          value={form.lng}
-                          onChange={(e) =>
-                            setForm({ ...form, lng: e.target.value })
-                          }
-                        />
-                      </div>
+                    <div>
+                      <Label>Observação (opcional)</Label>
+                      <Input
+                        value={form.observacao}
+                        onChange={(e) =>
+                          setForm({ ...form, observacao: e.target.value })
+                        }
+                        placeholder="Ex: fica no 2º andar, estacionamento próprio..."
+                      />
                     </div>
                     <Button
                       type="submit"
@@ -186,7 +176,7 @@ export default function RestaurantSearchPage() {
               <div className="text-center pt-2">
                 <Dialog open={open} onOpenChange={setOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-2" onClick={openCreate}>
                       <Plus className="w-4 h-4" />
                       Não encontrei — cadastrar novo
                     </Button>

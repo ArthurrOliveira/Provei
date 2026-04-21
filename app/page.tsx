@@ -8,7 +8,7 @@ export default function LandingPage() {
       <header className="px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
           <UtensilsCrossed className="w-6 h-6 text-orange-600" />
-          <span className="text-xl font-bold text-orange-700">TasteCircle</span>
+          <span className="text-xl font-bold text-orange-700">Mangut</span>
         </div>
         <Link href="/login">
           <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">

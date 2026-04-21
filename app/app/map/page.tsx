@@ -16,16 +16,15 @@ export default async function MapPage() {
 
   const vibeTags = (vibeTagsRes.success ? vibeTagsRes.data : []) ?? [];
 
-  // Restaurants with friend reviews that have coordinates
+  // All restaurants with coordinates; highlight friend reviews when available
   const restaurants = await prisma.restaurant.findMany({
     where: {
       lat: { not: null },
       lng: { not: null },
-      reviews: { some: { userId: { in: friendIds } } },
     },
     include: {
       reviews: {
-        where: { userId: { in: friendIds } },
+        where: friendIds.length > 0 ? { userId: { in: friendIds } } : { userId: currentUser.id },
         include: {
           vibeTags: { include: { vibeTag: true } },
         },

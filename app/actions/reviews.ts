@@ -48,6 +48,27 @@ export async function getReviewsByRestaurant(
   }
 }
 
+export async function getReviewsByRestaurantFiltered(
+  restaurantId: string,
+  userIds: string[]
+): Promise<ActionResult<ReviewWithRelations[]>> {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { restaurantId, userId: { in: userIds } },
+      include: {
+        user: { select: { id: true, name: true, avatarUrl: true } },
+        restaurant: { select: { id: true, name: true, address: true } },
+        vibeTags: { include: { vibeTag: true } },
+        media: { include: { _count: { select: { likes: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return { success: true, data: reviews as ReviewWithRelations[] };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+}
+
 export async function getTopVibeTags(
   restaurantId: string
 ): Promise<ActionResult<VibeTagCount[]>> {

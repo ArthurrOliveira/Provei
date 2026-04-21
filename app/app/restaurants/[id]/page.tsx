@@ -3,11 +3,14 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/app/actions/auth";
 import { getTopVibeTags } from "@/app/actions/reviews";
+import { getFriendIds } from "@/app/actions/social";
+import { getFriendGroups } from "@/app/actions/groups";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ReviewList from "@/components/review/ReviewList";
+import ReviewListFiltered from "@/components/review/ReviewListFiltered";
 import MediaGallery from "@/components/media/MediaGallery";
 import { MapPin, Star, PenLine } from "lucide-react";
 
@@ -29,6 +32,9 @@ export default async function RestaurantPage({
 
   const topTagsResult = await getTopVibeTags(id);
   const topTags = topTagsResult.success ? topTagsResult.data : [];
+
+  const friendIds = currentUser ? await getFriendIds(currentUser.id) : [];
+  const groups = currentUser ? await getFriendGroups(currentUser.id) : [];
 
   return (
     <div className="space-y-6">
@@ -76,13 +82,43 @@ export default async function RestaurantPage({
       <Separator />
 
       <Tabs defaultValue="reviews">
-        <TabsList>
-          <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="reviews">Todas</TabsTrigger>
+          {currentUser && <TabsTrigger value="friends">Amigos</TabsTrigger>}
+          {groups.map((group) => (
+            <TabsTrigger key={group.id} value={`group-${group.id}`}>
+              {group.name}
+            </TabsTrigger>
+          ))}
           <TabsTrigger value="media">Mídia</TabsTrigger>
         </TabsList>
+
         <TabsContent value="reviews" className="mt-4">
           <ReviewList restaurantId={id} currentUserId={currentUser?.id} />
         </TabsContent>
+
+        {currentUser && (
+          <TabsContent value="friends" className="mt-4">
+            <ReviewListFiltered
+              restaurantId={id}
+              userIds={friendIds}
+              currentUserId={currentUser.id}
+              emptyMessage="Nenhum amigo avaliou este restaurante ainda."
+            />
+          </TabsContent>
+        )}
+
+        {groups.map((group) => (
+          <TabsContent key={group.id} value={`group-${group.id}`} className="mt-4">
+            <ReviewListFiltered
+              restaurantId={id}
+              userIds={group.members.map((m) => m.user.id)}
+              currentUserId={currentUser?.id}
+              emptyMessage={`Ninguém do grupo "${group.name}" avaliou este restaurante ainda.`}
+            />
+          </TabsContent>
+        ))}
+
         <TabsContent value="media" className="mt-4">
           <MediaGallery restaurantId={id} currentUserId={currentUser?.id} />
         </TabsContent>

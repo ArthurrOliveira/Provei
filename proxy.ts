@@ -31,11 +31,11 @@ export async function proxy(request: NextRequest) {
 
   const isAppRoute = request.nextUrl.pathname.startsWith("/app");
 
-  if (isAppRoute && !user) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    return NextResponse.redirect(loginUrl);
-  }
+  // if (isAppRoute && !user) {
+  //   const loginUrl = request.nextUrl.clone();
+  //   loginUrl.pathname = "/login";
+  //   return NextResponse.redirect(loginUrl);
+  // }
 
   if (request.nextUrl.pathname === "/login" && user) {
     const feedUrl = request.nextUrl.clone();

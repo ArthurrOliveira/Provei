@@ -44,7 +44,7 @@ export default function Sidebar({
       <div className="p-6">
         <Link href="/app/feed" className="flex items-center gap-2">
           <UtensilsCrossed className="w-6 h-6 text-orange-600" />
-          <span className="text-xl font-bold text-orange-700">TasteCircle</span>
+          <span className="text-xl font-bold text-orange-700">Mangut</span>
         </Link>
       </div>
 

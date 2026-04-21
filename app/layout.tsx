@@ -9,7 +9,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "TasteCircle",
+  title: "Mangut",
   description: "Avaliações de restaurantes com seus amigos",
 };
 

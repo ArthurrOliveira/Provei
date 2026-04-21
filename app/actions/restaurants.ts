@@ -35,16 +35,14 @@ export async function getRestaurantById(
 export async function createRestaurant(data: {
   name: string;
   address: string;
-  lat?: number;
-  lng?: number;
+  observacao?: string;
 }): Promise<ActionResult<Restaurant>> {
   try {
     const restaurant = await prisma.restaurant.create({
       data: {
         name: data.name,
         address: data.address,
-        lat: data.lat ?? null,
-        lng: data.lng ?? null,
+        observacao: data.observacao ?? null,
       },
     });
     return { success: true, data: restaurant };

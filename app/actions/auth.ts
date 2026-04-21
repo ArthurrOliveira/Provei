@@ -4,6 +4,16 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
 export async function getCurrentUser() {
+  if (process.env.BYPASS_AUTH === "true") {
+    return {
+      id: "preview-user",
+      name: "Preview",
+      email: "preview@tastecircle.dev",
+      avatarUrl: null,
+      createdAt: new Date(),
+    };
+  }
+
   try {
     const supabase = await createClient();
     const {

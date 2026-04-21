@@ -48,7 +48,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="text-4xl mb-2">🍽️</div>
-          <CardTitle className="text-2xl text-orange-700">TasteCircle</CardTitle>
+          <CardTitle className="text-2xl text-orange-700">Mangut</CardTitle>
           <CardDescription>
             Descubra restaurantes com seus amigos
           </CardDescription>
