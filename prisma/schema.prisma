@@ -42,14 +42,21 @@ model Follow {
 }
 
 model Restaurant {
-  id            String   @id @default(uuid())
-  name          String
-  address       String
-  googlePlaceId String?
-  observacao    String?
-  lat           Float?
-  lng           Float?
-  createdAt     DateTime @default(now())
+  id                String   @id @default(uuid())
+  name              String
+  address           String
+  googlePlaceId     String?  @unique
+  observacao        String?
+  lat               Float?
+  lng               Float?
+  phone             String?
+  website           String?
+  googleMapsUri     String?
+  googleRating      Float?
+  googleRatingCount Int?
+  openingHours      Json?
+  photoReferences   Json?
+  createdAt         DateTime @default(now())
 
   reviews   Review[]
   listItems RestaurantListItem[]
