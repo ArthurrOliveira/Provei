@@ -27,7 +27,7 @@ export default function StarRating({
             size === "sm" ? "text-base" : "text-2xl"
           )}
         >
-          <span className={star <= value ? "text-orange-500" : "text-gray-200"}>
+          <span className={star <= value ? "text-gold" : "text-cream-dark"}>
             ★
           </span>
         </button>

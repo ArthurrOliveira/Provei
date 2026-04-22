@@ -43,25 +43,25 @@ export default function ProfileHeader({
   }
 
   return (
-    <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-orange-100">
+    <div className="flex items-start gap-4 p-5 bg-burgundy rounded-2xl">
       <Avatar className="w-16 h-16">
         <AvatarImage src={profile.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-orange-200 text-orange-700 text-xl">
+        <AvatarFallback className="bg-olive text-cream text-xl font-body">
           {profile.name.slice(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 min-w-0">
-        <h1 className="text-xl font-bold text-gray-900">{profile.name}</h1>
-        <div className="flex gap-4 mt-2 text-sm text-gray-500">
+        <h1 className="font-display text-xl font-bold text-cream">{profile.name}</h1>
+        <div className="flex gap-4 mt-2 text-sm font-body text-cream/70">
           <span>
-            <strong className="text-gray-900">{profile._count.reviews}</strong> avaliações
+            <strong className="text-cream">{profile._count.reviews}</strong> avaliações
           </span>
           <span>
-            <strong className="text-gray-900">{profile._count.followers}</strong> seguidores
+            <strong className="text-cream">{profile._count.followers}</strong> seguidores
           </span>
           <span>
-            <strong className="text-gray-900">{profile._count.following}</strong> seguindo
+            <strong className="text-cream">{profile._count.following}</strong> seguindo
           </span>
         </div>
       </div>
@@ -70,13 +70,12 @@ export default function ProfileHeader({
         <Button
           onClick={handleToggleFollow}
           disabled={loading}
-          variant={following ? "outline" : "default"}
+          size="sm"
           className={
             following
-              ? "border-orange-300 text-orange-600"
-              : "bg-orange-600 hover:bg-orange-700"
+              ? "border-cream/40 text-cream bg-transparent hover:bg-cream/10 border font-body"
+              : "bg-cream text-burgundy hover:bg-cream-dark font-body font-semibold"
           }
-          size="sm"
         >
           {following ? "Seguindo" : "Seguir"}
         </Button>

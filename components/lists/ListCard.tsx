@@ -10,21 +10,15 @@ function ThumbnailCollage({ thumbnails }: { thumbnails: string[] }) {
 
   if (count === 0) {
     return (
-      <div className="w-full h-full bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center">
-        <BookMarked className="w-10 h-10 text-orange-300" />
+      <div className="w-full h-full bg-gradient-to-br from-cream to-cream-dark flex items-center justify-center">
+        <BookMarked className="w-10 h-10 text-sage" />
       </div>
     );
   }
 
   if (count === 1) {
     return (
-      <Image
-        src={thumbnails[0]}
-        alt=""
-        fill
-        className="object-cover"
-        sizes="(max-width: 640px) 100vw, 400px"
-      />
+      <Image src={thumbnails[0]} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" />
     );
   }
 
@@ -60,9 +54,8 @@ export default function ListCard({ list }: { list: ListSummary }) {
 
   return (
     <Link href={`/app/lists/${list.id}`}>
-      <div className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-orange-200 hover:shadow-sm transition-all">
-        {/* Cover / collage */}
-        <div className="relative h-40 w-full overflow-hidden bg-gray-50">
+      <div className="group bg-warm-white rounded-2xl border border-cream-dark overflow-hidden hover:border-burgundy/30 hover:shadow-sm transition-all">
+        <div className="relative h-40 w-full overflow-hidden bg-cream">
           {cover ? (
             <Image
               src={cover}
@@ -75,27 +68,26 @@ export default function ListCard({ list }: { list: ListSummary }) {
             <ThumbnailCollage thumbnails={list.thumbnails} />
           )}
           {!list.isPublic && (
-            <span className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+            <span className="absolute top-2 right-2 flex items-center gap-1 bg-charcoal/70 text-cream text-xs font-body px-2 py-0.5 rounded-full">
               <Lock className="w-3 h-3" />
               Privada
             </span>
           )}
         </div>
 
-        {/* Content */}
         <div className="p-3 space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+            <h3 className="font-display font-semibold text-charcoal text-sm leading-tight line-clamp-2">
               {list.title}
             </h3>
-            <span className="flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
+            <span className="flex items-center gap-1 text-xs text-sage font-body flex-shrink-0">
               <Heart className="w-3.5 h-3.5" />
               {list._count.likes}
             </span>
           </div>
 
           {list.description && (
-            <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+            <p className="font-body text-xs text-sage leading-relaxed line-clamp-2">
               {truncate(list.description, 100)}
             </p>
           )}
@@ -104,15 +96,15 @@ export default function ListCard({ list }: { list: ListSummary }) {
             <div className="flex items-center gap-1.5">
               <Avatar className="w-5 h-5">
                 <AvatarImage src={list.user.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-orange-200 text-orange-700 text-[10px]">
+                <AvatarFallback className="bg-olive text-cream text-[10px] font-body">
                   {list.user.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-gray-500 truncate max-w-[100px]">
+              <span className="font-body text-xs text-sage truncate max-w-[100px]">
                 {list.user.name}
               </span>
             </div>
-            <span className="text-xs text-gray-400">
+            <span className="font-body text-xs text-sage">
               {list._count.items}{" "}
               {list._count.items === 1 ? "lugar" : "lugares"} ·{" "}
               {formatRelativeTime(list.updatedAt)}

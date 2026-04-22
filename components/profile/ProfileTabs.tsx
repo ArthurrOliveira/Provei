@@ -26,22 +26,21 @@ export default function ProfileTabs({
 
   return (
     <div className="space-y-4">
-      {/* Tab bar */}
-      <div className="flex gap-1 border-b border-gray-100">
+      <div className="flex gap-1 border-b border-cream-dark">
         <button
           type="button"
           onClick={() => setTab("reviews")}
           className={cn(
-            "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
+            "flex items-center gap-1.5 px-4 py-2.5 text-sm font-body font-medium border-b-2 transition-colors -mb-px",
             tab === "reviews"
-              ? "border-orange-500 text-orange-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "border-burgundy text-burgundy"
+              : "border-transparent text-sage hover:text-charcoal"
           )}
         >
           <Star className="w-4 h-4" />
           Avaliações
           {reviews.length > 0 && (
-            <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+            <span className="text-xs bg-cream text-charcoal px-1.5 py-0.5 rounded-full font-body">
               {reviews.length}
             </span>
           )}
@@ -50,60 +49,53 @@ export default function ProfileTabs({
           type="button"
           onClick={() => setTab("lists")}
           className={cn(
-            "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
+            "flex items-center gap-1.5 px-4 py-2.5 text-sm font-body font-medium border-b-2 transition-colors -mb-px",
             tab === "lists"
-              ? "border-orange-500 text-orange-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "border-burgundy text-burgundy"
+              : "border-transparent text-sage hover:text-charcoal"
           )}
         >
           <BookMarked className="w-4 h-4" />
           Listas
           {lists.length > 0 && (
-            <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+            <span className="text-xs bg-cream text-charcoal px-1.5 py-0.5 rounded-full font-body">
               {lists.length}
             </span>
           )}
         </button>
       </div>
 
-      {/* Reviews tab */}
       {tab === "reviews" && (
         <>
           {reviews.length === 0 ? (
-            <p className="text-gray-500 text-sm py-4">Nenhuma avaliação ainda.</p>
+            <p className="text-sage font-body text-sm py-4">Nenhuma avaliação ainda.</p>
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <ReviewCard
-                  key={review.id}
-                  review={review}
-                  showRestaurant
-                  currentUserId={currentUserId}
-                />
+                <ReviewCard key={review.id} review={review} showRestaurant currentUserId={currentUserId} />
               ))}
             </div>
           )}
         </>
       )}
 
-      {/* Lists tab */}
       {tab === "lists" && (
         <>
           {lists.length === 0 ? (
             <div className="text-center py-8 space-y-3">
-              <BookMarked className="w-10 h-10 text-gray-300 mx-auto" />
+              <BookMarked className="w-10 h-10 text-cream-dark mx-auto" />
               {isOwnProfile ? (
                 <>
-                  <p className="text-gray-500 text-sm">Você ainda não tem listas.</p>
+                  <p className="text-sage font-body text-sm">Você ainda não tem listas.</p>
                   <Link href="/app/lists/new">
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 gap-2">
+                    <Button size="sm" className="bg-burgundy hover:bg-burgundy-light text-cream font-body gap-2">
                       <Plus className="w-4 h-4" />
                       Criar lista
                     </Button>
                   </Link>
                 </>
               ) : (
-                <p className="text-gray-500 text-sm">Nenhuma lista pública ainda.</p>
+                <p className="text-sage font-body text-sm">Nenhuma lista pública ainda.</p>
               )}
             </div>
           ) : (
@@ -113,7 +105,7 @@ export default function ProfileTabs({
               ))}
               {isOwnProfile && (
                 <Link href="/app/lists/new">
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl h-full min-h-[200px] flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-300 hover:text-orange-500 transition-colors cursor-pointer">
+                  <div className="border-2 border-dashed border-cream-dark rounded-2xl h-full min-h-[200px] flex flex-col items-center justify-center gap-2 text-sage hover:border-burgundy/40 hover:text-burgundy transition-colors cursor-pointer font-body">
                     <Plus className="w-8 h-8" />
                     <span className="text-sm font-medium">Nova lista</span>
                   </div>

@@ -26,8 +26,8 @@ export default function ReviewCard({
     <Card
       className={
         isQuickReview
-          ? "overflow-hidden hover:border-amber-200 transition-colors border-amber-100 bg-amber-50/30"
-          : "overflow-hidden hover:border-orange-200 transition-colors"
+          ? "overflow-hidden transition-colors border-gold/20 bg-cream/40"
+          : "overflow-hidden hover:border-burgundy/20 transition-colors"
       }
     >
       <CardContent className="p-4">
@@ -35,7 +35,7 @@ export default function ReviewCard({
           <Link href={`/app/profile/${review.user.id}`}>
             <Avatar className="w-9 h-9 flex-shrink-0">
               <AvatarImage src={review.user.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-orange-200 text-orange-700 text-xs">
+              <AvatarFallback className="bg-olive text-cream text-xs font-body">
                 {review.user.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -46,38 +46,38 @@ export default function ReviewCard({
               <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                 <Link
                   href={`/app/profile/${review.user.id}`}
-                  className="font-medium text-sm text-gray-900 hover:text-orange-600"
+                  className="font-body font-semibold text-sm text-charcoal hover:text-burgundy"
                 >
                   {review.user.name}
                 </Link>
                 {topBadge && (
                   <span
                     title={topBadge.label}
-                    className="inline-flex items-center gap-0.5 text-xs text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full font-medium"
+                    className="inline-flex items-center gap-0.5 text-xs text-burgundy-dark bg-gold/20 px-1.5 py-0.5 rounded-full font-body font-medium"
                   >
                     <span>{BADGE_ICONS[topBadge.slug] ?? "🏅"}</span>
                     <span className="hidden sm:inline">{topBadge.label}</span>
                   </span>
                 )}
                 {showRestaurant && (
-                  <span className="text-sm text-gray-500">
+                  <span className="font-body text-sm text-sage">
                     em{" "}
                     <Link
                       href={`/app/restaurants/${review.restaurant.id}`}
-                      className="hover:text-orange-600"
+                      className="hover:text-burgundy"
                     >
                       {review.restaurant.name}
                     </Link>
                   </span>
                 )}
                 {isQuickReview && (
-                  <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full font-medium">
+                  <span className="inline-flex items-center gap-1 text-xs text-burgundy bg-gold/20 px-1.5 py-0.5 rounded-full font-body font-medium">
                     <Zap className="w-3 h-3" />
                     Rápida
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-400 flex-shrink-0">
+              <span className="text-xs text-sage flex-shrink-0 font-body">
                 {formatRelativeTime(review.createdAt)}
               </span>
             </div>
@@ -87,7 +87,7 @@ export default function ReviewCard({
             )}
 
             {!isQuickReview && (
-              <p className="text-sm text-gray-700 mt-1 leading-relaxed">
+              <p className="font-body text-sm text-charcoal/80 mt-1 leading-relaxed">
                 {truncate(review.comment, 200)}
               </p>
             )}
@@ -100,8 +100,8 @@ export default function ReviewCard({
                     variant="secondary"
                     className={
                       isQuickReview
-                        ? "text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 py-1 px-2.5"
-                        : "text-xs bg-amber-100 text-amber-700 hover:bg-amber-200"
+                        ? "text-xs bg-gold/15 text-burgundy-dark hover:bg-gold/25 py-1 px-2.5 font-body"
+                        : "text-xs bg-olive/10 text-olive-dark hover:bg-olive/20 font-body"
                     }
                   >
                     {vibeTag.label}

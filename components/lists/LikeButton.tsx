@@ -40,13 +40,13 @@ export default function LikeButton({
       onClick={handleToggle}
       disabled={loading}
       className={cn(
-        "flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-all",
+        "flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-body font-medium transition-all",
         liked
-          ? "bg-red-50 border-red-200 text-red-600"
-          : "bg-white border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-500"
+          ? "bg-burgundy/10 border-burgundy/30 text-burgundy"
+          : "bg-warm-white border-cream-dark text-sage hover:border-burgundy/30 hover:text-burgundy"
       )}
     >
-      <Heart className={cn("w-4 h-4", liked && "fill-red-500")} />
+      <Heart className={cn("w-4 h-4", liked && "fill-burgundy")} />
       {count}
     </button>
   );

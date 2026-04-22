@@ -10,38 +10,13 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { searchRestaurants } from "@/app/actions/restaurants";
 import { createList, updateList } from "@/app/actions/lists";
-import {
-  Search,
-  X,
-  ChevronUp,
-  ChevronDown,
-  MapPin,
-  Plus,
-  Globe,
-  Lock,
-} from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown, MapPin, Plus, Globe, Lock } from "lucide-react";
 import type { Restaurant } from "@prisma/client";
 
-type FormItem = {
-  restaurantId: string;
-  name: string;
-  address: string;
-  note: string;
-};
+type FormItem = { restaurantId: string; name: string; address: string; note: string };
+type InitialData = { id?: string; title: string; description: string; isPublic: boolean; items: FormItem[] };
 
-type InitialData = {
-  id?: string;
-  title: string;
-  description: string;
-  isPublic: boolean;
-  items: FormItem[];
-};
-
-export default function ListFormClient({
-  initialData,
-}: {
-  initialData?: InitialData;
-}) {
+export default function ListFormClient({ initialData }: { initialData?: InitialData }) {
   const router = useRouter();
   const isEditing = Boolean(initialData?.id);
 
@@ -58,11 +33,7 @@ export default function ListFormClient({
 
   const handleSearch = useCallback(async (q: string) => {
     setSearchQuery(q);
-    if (!q.trim()) {
-      setSearchResults([]);
-      setShowResults(false);
-      return;
-    }
+    if (!q.trim()) { setSearchResults([]); setShowResults(false); return; }
     setSearching(true);
     setShowResults(true);
     const res = await searchRestaurants(q);
@@ -71,66 +42,36 @@ export default function ListFormClient({
   }, []);
 
   function addRestaurant(r: Restaurant) {
-    if (items.some((i) => i.restaurantId === r.id)) {
-      toast.error("Restaurante já está na lista");
-      return;
-    }
-    setItems((prev) => [
-      ...prev,
-      { restaurantId: r.id, name: r.name, address: r.address, note: "" },
-    ]);
-    setSearchQuery("");
-    setSearchResults([]);
-    setShowResults(false);
+    if (items.some((i) => i.restaurantId === r.id)) { toast.error("Restaurante já está na lista"); return; }
+    setItems((prev) => [...prev, { restaurantId: r.id, name: r.name, address: r.address, note: "" }]);
+    setSearchQuery(""); setSearchResults([]); setShowResults(false);
   }
 
-  function removeItem(idx: number) {
-    setItems((prev) => prev.filter((_, i) => i !== idx));
-  }
-
+  function removeItem(idx: number) { setItems((prev) => prev.filter((_, i) => i !== idx)); }
   function moveUp(idx: number) {
     if (idx === 0) return;
-    setItems((prev) => {
-      const next = [...prev];
-      [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-      return next;
-    });
+    setItems((prev) => { const next = [...prev]; [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]; return next; });
   }
-
   function moveDown(idx: number) {
     setItems((prev) => {
       if (idx === prev.length - 1) return prev;
-      const next = [...prev];
-      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-      return next;
+      const next = [...prev]; [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]; return next;
     });
   }
-
   function updateNote(idx: number, note: string) {
-    setItems((prev) =>
-      prev.map((item, i) => (i === idx ? { ...item, note } : item))
-    );
+    setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, note } : item)));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Informe um título para a lista");
-      return;
-    }
+    if (!title.trim()) { toast.error("Informe um título para a lista"); return; }
     setSubmitting(true);
-
     const payload = {
       title: title.trim(),
       description: description.trim() || undefined,
       isPublic,
-      items: items.map((item, i) => ({
-        restaurantId: item.restaurantId,
-        note: item.note.trim() || undefined,
-        position: i,
-      })),
+      items: items.map((item, i) => ({ restaurantId: item.restaurantId, note: item.note.trim() || undefined, position: i })),
     };
-
     try {
       if (isEditing && initialData?.id) {
         const res = await updateList(initialData.id, payload);
@@ -151,11 +92,8 @@ export default function ListFormClient({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Title */}
       <div>
-        <Label htmlFor="title" className="mb-2 block">
-          Título *
-        </Label>
+        <Label htmlFor="title" className="mb-2 block font-body font-semibold text-charcoal">Título *</Label>
         <Input
           id="title"
           value={title}
@@ -163,37 +101,32 @@ export default function ListFormClient({
           placeholder="Ex: Melhores botecos de SP"
           required
           maxLength={80}
+          className="border-cream-dark focus:border-olive focus:ring-olive/20 bg-warm-white font-body placeholder:text-sage"
         />
       </div>
 
-      {/* Description */}
       <div>
-        <Label htmlFor="desc" className="mb-2 block">
-          Descrição (opcional)
-        </Label>
+        <Label htmlFor="desc" className="mb-2 block font-body font-semibold text-charcoal">Descrição (opcional)</Label>
         <Textarea
           id="desc"
           rows={3}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Conta um pouco sobre essa lista..."
-          className="resize-none"
+          className="resize-none border-cream-dark focus:border-olive focus:ring-olive/20 bg-warm-white font-body placeholder:text-sage"
           maxLength={300}
         />
       </div>
 
-      {/* Visibility toggle */}
       <div>
-        <Label className="mb-2 block">Visibilidade</Label>
+        <Label className="mb-2 block font-body font-semibold text-charcoal">Visibilidade</Label>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setIsPublic(true)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all",
-              isPublic
-                ? "bg-orange-500 text-white border-orange-500"
-                : "bg-white text-gray-600 border-gray-200 hover:border-orange-300"
+              "flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-body font-medium transition-all",
+              isPublic ? "bg-olive text-cream border-olive" : "bg-cream text-charcoal border-cream-dark hover:border-olive-light"
             )}
           >
             <Globe className="w-4 h-4" />
@@ -203,48 +136,39 @@ export default function ListFormClient({
             type="button"
             onClick={() => setIsPublic(false)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all",
-              !isPublic
-                ? "bg-gray-700 text-white border-gray-700"
-                : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+              "flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-body font-medium transition-all",
+              !isPublic ? "bg-charcoal text-cream border-charcoal" : "bg-cream text-charcoal border-cream-dark hover:border-charcoal/40"
             )}
           >
             <Lock className="w-4 h-4" />
             Privada
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-1.5">
-          {isPublic
-            ? "Qualquer pessoa com o link pode ver esta lista"
-            : "Somente você pode ver esta lista"}
+        <p className="font-body text-xs text-sage mt-1.5">
+          {isPublic ? "Qualquer pessoa com o link pode ver esta lista" : "Somente você pode ver esta lista"}
         </p>
       </div>
 
-      {/* Restaurant search */}
       <div>
-        <Label className="mb-2 block">Restaurantes</Label>
+        <Label className="mb-2 block font-body font-semibold text-charcoal">Restaurantes</Label>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sage" />
           <Input
             placeholder="Buscar restaurante para adicionar..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             onFocus={() => searchResults.length > 0 && setShowResults(true)}
-            className="pl-9"
+            className="pl-9 border-cream-dark focus:border-olive focus:ring-olive/20 bg-warm-white font-body placeholder:text-sage"
           />
           {showResults && (
-            <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-warm-white border border-cream-dark rounded-xl shadow-lg max-h-60 overflow-y-auto">
               {searching ? (
-                <p className="text-sm text-gray-400 text-center py-4">Buscando...</p>
+                <p className="font-body text-sm text-sage text-center py-4">Buscando...</p>
               ) : searchResults.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">
-                  Nenhum resultado
-                </p>
+                <p className="font-body text-sm text-sage text-center py-4">Nenhum resultado</p>
               ) : (
                 searchResults.map((r) => {
-                  const alreadyAdded = items.some(
-                    (i) => i.restaurantId === r.id
-                  );
+                  const alreadyAdded = items.some((i) => i.restaurantId === r.id);
                   return (
                     <button
                       key={r.id}
@@ -252,21 +176,19 @@ export default function ListFormClient({
                       disabled={alreadyAdded}
                       onClick={() => addRestaurant(r)}
                       className={cn(
-                        "w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-orange-50 transition-colors",
+                        "w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-cream transition-colors",
                         alreadyAdded && "opacity-40 cursor-not-allowed"
                       )}
                     >
-                      <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      <MapPin className="w-4 h-4 text-burgundy flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {r.name}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">{r.address}</p>
+                        <p className="font-body text-sm font-medium text-charcoal truncate">{r.name}</p>
+                        <p className="font-body text-xs text-sage truncate">{r.address}</p>
                       </div>
                       {alreadyAdded ? (
-                        <span className="text-xs text-gray-400">Adicionado</span>
+                        <span className="font-body text-xs text-sage">Adicionado</span>
                       ) : (
-                        <Plus className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                        <Plus className="w-4 h-4 text-burgundy flex-shrink-0" />
                       )}
                     </button>
                   );
@@ -276,59 +198,33 @@ export default function ListFormClient({
           )}
         </div>
         {showResults && (
-          <button
-            type="button"
-            onClick={() => setShowResults(false)}
-            className="text-xs text-gray-400 mt-1 hover:text-gray-600"
-          >
+          <button type="button" onClick={() => setShowResults(false)} className="font-body text-xs text-sage mt-1 hover:text-charcoal">
             Fechar resultados
           </button>
         )}
       </div>
 
-      {/* Items list */}
       {items.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="font-body text-sm font-medium text-charcoal">
             {items.length} {items.length === 1 ? "restaurante" : "restaurantes"} na lista
           </p>
           {items.map((item, idx) => (
-            <div
-              key={item.restaurantId}
-              className="bg-gray-50 rounded-xl p-3 space-y-2 border border-gray-100"
-            >
+            <div key={item.restaurantId} className="bg-cream rounded-xl p-3 space-y-2 border border-cream-dark">
               <div className="flex items-start gap-2">
-                <span className="text-xs font-bold text-gray-400 mt-0.5 w-5 flex-shrink-0">
-                  {idx + 1}.
-                </span>
+                <span className="font-body text-xs font-bold text-sage mt-0.5 w-5 flex-shrink-0">{idx + 1}.</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 leading-tight">
-                    {item.name}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{item.address}</p>
+                  <p className="font-body text-sm font-medium text-charcoal leading-tight">{item.name}</p>
+                  <p className="font-body text-xs text-sage truncate">{item.address}</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => moveUp(idx)}
-                    disabled={idx === 0}
-                    className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 transition-colors"
-                  >
-                    <ChevronUp className="w-3.5 h-3.5" />
+                  <button type="button" onClick={() => moveUp(idx)} disabled={idx === 0} className="p-1 rounded hover:bg-cream-dark disabled:opacity-30 transition-colors">
+                    <ChevronUp className="w-3.5 h-3.5 text-charcoal" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => moveDown(idx)}
-                    disabled={idx === items.length - 1}
-                    className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 transition-colors"
-                  >
-                    <ChevronDown className="w-3.5 h-3.5" />
+                  <button type="button" onClick={() => moveDown(idx)} disabled={idx === items.length - 1} className="p-1 rounded hover:bg-cream-dark disabled:opacity-30 transition-colors">
+                    <ChevronDown className="w-3.5 h-3.5 text-charcoal" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(idx)}
-                    className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors"
-                  >
+                  <button type="button" onClick={() => removeItem(idx)} className="p-1 rounded hover:bg-burgundy/10 text-sage hover:text-burgundy transition-colors">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -337,7 +233,7 @@ export default function ListFormClient({
                 placeholder='Nota pessoal (ex: "pede o risoto")'
                 value={item.note}
                 onChange={(e) => updateNote(idx, e.target.value)}
-                className="h-8 text-xs bg-white"
+                className="h-8 text-xs bg-warm-white border-cream-dark font-body placeholder:text-sage"
                 maxLength={120}
               />
             </div>
@@ -348,15 +244,9 @@ export default function ListFormClient({
       <Button
         type="submit"
         disabled={submitting}
-        className="w-full bg-orange-600 hover:bg-orange-700 font-semibold"
+        className="w-full bg-burgundy hover:bg-burgundy-light text-cream font-body font-semibold"
       >
-        {submitting
-          ? isEditing
-            ? "Salvando..."
-            : "Criando..."
-          : isEditing
-          ? "Salvar alterações"
-          : "Criar lista"}
+        {submitting ? (isEditing ? "Salvando..." : "Criando...") : (isEditing ? "Salvar alterações" : "Criar lista")}
       </Button>
     </form>
   );

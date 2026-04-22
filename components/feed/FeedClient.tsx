@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { getFeed } from "@/app/actions/feed";
-import { getAllVibeTags } from "@/app/actions/reviews";
 import ReviewCard from "@/components/review/ReviewCard";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ReviewWithRelations } from "@/types";
 import type { VibeTag } from "@prisma/client";
 import { cn } from "@/lib/utils";
@@ -28,12 +26,6 @@ export default function FeedClient({
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-
-  function toggleTag(id: string) {
-    setSelectedTags((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
-    );
-  }
 
   async function applyFilters(newMode?: "friends" | "fof", newTags?: string[]) {
     const m = newMode ?? mode;
@@ -61,12 +53,7 @@ export default function FeedClient({
   async function loadMore() {
     if (!nextCursor) return;
     setLoadingMore(true);
-    const res = await getFeed({
-      userId,
-      mode,
-      vibeTagIds: selectedTags,
-      cursor: nextCursor,
-    });
+    const res = await getFeed({ userId, mode, vibeTagIds: selectedTags, cursor: nextCursor });
     setReviews((prev) => [...prev, ...res.reviews]);
     setNextCursor(res.nextCursor);
     setLoadingMore(false);
@@ -75,17 +62,18 @@ export default function FeedClient({
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-orange-100 p-4 space-y-3">
+      <div className="bg-cream rounded-xl border border-cream-dark p-4 space-y-3">
         <div className="flex gap-2">
           <Button
             size="sm"
             variant={mode === "friends" ? "default" : "outline"}
             onClick={() => handleModeChange("friends")}
-            className={
+            className={cn(
+              "font-body",
               mode === "friends"
-                ? "bg-orange-600 hover:bg-orange-700"
-                : "border-orange-200"
-            }
+                ? "bg-burgundy hover:bg-burgundy-light text-cream"
+                : "border-cream-dark text-charcoal hover:bg-cream"
+            )}
           >
             <Users className="w-3.5 h-3.5 mr-1" />
             Amigos
@@ -94,11 +82,12 @@ export default function FeedClient({
             size="sm"
             variant={mode === "fof" ? "default" : "outline"}
             onClick={() => handleModeChange("fof")}
-            className={
+            className={cn(
+              "font-body",
               mode === "fof"
-                ? "bg-orange-600 hover:bg-orange-700"
-                : "border-orange-200"
-            }
+                ? "bg-burgundy hover:bg-burgundy-light text-cream"
+                : "border-cream-dark text-charcoal hover:bg-cream"
+            )}
           >
             Amigos de amigos
           </Button>
@@ -110,10 +99,10 @@ export default function FeedClient({
               key={tag.id}
               onClick={() => handleTagToggle(tag.id)}
               className={cn(
-                "text-xs px-2.5 py-1 rounded-full border transition-all",
+                "text-xs font-body px-2.5 py-1 rounded-full border transition-all",
                 selectedTags.includes(tag.id)
-                  ? "bg-orange-500 text-white border-orange-500"
-                  : "text-gray-500 border-gray-200 hover:border-orange-300"
+                  ? "bg-olive text-cream border-olive"
+                  : "text-charcoal border-cream-dark bg-warm-white hover:border-olive-light"
               )}
             >
               {tag.label}
@@ -126,19 +115,17 @@ export default function FeedClient({
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 rounded-xl bg-gray-100 animate-pulse" />
+            <div key={i} className="h-40 rounded-xl bg-cream-dark animate-pulse" />
           ))}
         </div>
       ) : reviews.length === 0 ? (
-        <div className="text-center py-16 text-gray-500 space-y-3">
+        <div className="text-center py-16 text-sage space-y-3 font-body">
           <div className="text-5xl">🍽️</div>
-          <p className="font-medium">Seu feed está vazio</p>
-          <p className="text-sm">
-            Siga amigos para ver as avaliações deles aqui!
-          </p>
+          <p className="font-semibold text-charcoal">Seu feed está vazio</p>
+          <p className="text-sm">Siga amigos para ver as avaliações deles aqui!</p>
           <Button
             variant="outline"
-            className="border-orange-300 text-orange-600"
+            className="border-burgundy/40 text-burgundy hover:bg-burgundy hover:text-cream font-body"
             onClick={() => window.location.assign("/app/friends")}
           >
             Encontrar amigos
@@ -147,18 +134,13 @@ export default function FeedClient({
       ) : (
         <div className="space-y-4">
           {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              showRestaurant
-              currentUserId={userId}
-            />
+            <ReviewCard key={review.id} review={review} showRestaurant currentUserId={userId} />
           ))}
 
           {nextCursor && (
             <Button
               variant="outline"
-              className="w-full border-orange-200 text-orange-600"
+              className="w-full border-cream-dark text-charcoal hover:bg-cream font-body"
               onClick={loadMore}
               disabled={loadingMore}
             >

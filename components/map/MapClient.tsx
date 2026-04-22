@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { VibeTag } from "@prisma/client";
 
@@ -41,29 +40,31 @@ export default function MapClient({
   const filtered =
     selectedTags.length === 0
       ? restaurants
-      : restaurants.filter((r) =>
-          r.topTags.some((t) => selectedTags.includes(t.id))
-        );
+      : restaurants.filter((r) => r.topTags.some((t) => selectedTags.includes(t.id)));
 
   return (
     <div className="relative h-[calc(100vh-4rem)] md:h-[calc(100vh-2rem)]">
       {/* List filter banner */}
       {listTitle && (
-        <div className="absolute top-3 left-3 right-3 z-30 bg-orange-500 text-white text-xs font-semibold rounded-full px-4 py-1.5 shadow text-center">
+        <div className="absolute top-3 left-3 right-3 z-30 bg-burgundy text-cream text-xs font-body font-semibold rounded-full px-4 py-1.5 shadow text-center">
           Lista: {listTitle} · {restaurants.length} lugares
         </div>
       )}
+
       {/* Vibe tag filter bar */}
-      <div className={cn("absolute left-3 right-3 z-20 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow flex gap-1.5 overflow-x-auto", listTitle ? "top-12" : "top-3")}>
+      <div className={cn(
+        "absolute left-3 right-3 z-20 bg-warm-white/95 backdrop-blur-sm rounded-xl p-2 shadow flex gap-1.5 overflow-x-auto",
+        listTitle ? "top-12" : "top-3"
+      )}>
         {vibeTags.map((tag) => (
           <button
             key={tag.id}
             onClick={() => toggleTag(tag.id)}
             className={cn(
-              "text-xs px-2.5 py-1 rounded-full border whitespace-nowrap transition-all flex-shrink-0",
+              "text-xs font-body px-2.5 py-1 rounded-full border whitespace-nowrap transition-all flex-shrink-0",
               selectedTags.includes(tag.id)
-                ? "bg-orange-500 text-white border-orange-500"
-                : "text-gray-500 border-gray-200 hover:border-orange-300"
+                ? "bg-olive text-cream border-olive"
+                : "text-charcoal border-cream-dark hover:border-olive-light"
             )}
           >
             {tag.label}
@@ -76,7 +77,7 @@ export default function MapClient({
       {/* Mobile bottom sheet */}
       <div
         className={cn(
-          "md:hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-20 transition-transform duration-300",
+          "md:hidden absolute bottom-0 left-0 right-0 bg-warm-white rounded-t-2xl shadow-2xl z-20 transition-transform duration-300",
           showSheet ? "translate-y-0" : "translate-y-[calc(100%-3.5rem)]"
         )}
       >
@@ -84,30 +85,20 @@ export default function MapClient({
           onClick={() => setShowSheet(!showSheet)}
           className="w-full py-3 flex flex-col items-center gap-1"
         >
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-          <span className="text-xs text-gray-500">
-            {filtered.length} restaurantes
-          </span>
+          <div className="w-10 h-1 bg-cream-dark rounded-full" />
+          <span className="font-body text-xs text-sage">{filtered.length} restaurantes</span>
         </button>
-        <div className="overflow-y-auto max-h-64 divide-y px-3 pb-4">
+        <div className="overflow-y-auto max-h-64 divide-y divide-cream-dark px-3 pb-4">
           {filtered.map((r) => (
             <div key={r.id} className="py-3">
-              <Link
-                href={`/app/restaurants/${r.id}`}
-                className="font-medium text-sm hover:text-orange-600"
-              >
+              <Link href={`/app/restaurants/${r.id}`} className="font-display font-medium text-sm text-charcoal hover:text-burgundy">
                 {r.name}
               </Link>
-              <p className="text-xs text-gray-500 mt-0.5">{r.address}</p>
-              <p className="text-xs text-gray-400">
-                {r.reviewCount} avaliações de amigos
-              </p>
+              <p className="font-body text-xs text-sage mt-0.5">{r.address}</p>
+              <p className="font-body text-xs text-sage/70">{r.reviewCount} avaliações de amigos</p>
               <div className="flex gap-1 mt-1 flex-wrap">
                 {r.topTags.map((t) => (
-                  <Badge
-                    key={t.id}
-                    className="text-xs py-0 bg-orange-100 text-orange-700"
-                  >
+                  <Badge key={t.id} className="text-xs py-0 bg-olive/10 text-olive-dark font-body">
                     {t.label}
                   </Badge>
                 ))}

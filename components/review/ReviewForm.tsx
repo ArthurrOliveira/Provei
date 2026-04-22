@@ -95,13 +95,9 @@ export default function ReviewForm({
 
       const type = isImage ? "IMAGE" : "VIDEO";
       const preview = URL.createObjectURL(file);
-      const thumbnail = isVideo
-        ? await generateVideoThumbnail(file)
-        : undefined;
-
+      const thumbnail = isVideo ? await generateVideoThumbnail(file) : undefined;
       setFiles((prev) => [...prev, { file, preview, type, thumbnail }]);
     }
-
     e.target.value = "";
   }
 
@@ -121,9 +117,7 @@ export default function ReviewForm({
 
     if (error) throw new Error(error.message);
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
+    const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
 
     let thumbnailUrl: string | undefined;
     if (fp.thumbnail) {
@@ -177,7 +171,7 @@ export default function ReviewForm({
         toast.success(`Novo selo: ${badge.label}!`, {
           icon: BADGE_ICONS[badge.slug] ?? "🏅",
           duration: 6000,
-          style: { background: "#fef3c7", border: "1px solid #f59e0b", color: "#92400e" },
+          style: { background: "#E0BE82", border: "1px solid #C4954A", color: "#3D1014" },
         });
       }
       router.push(`/app/restaurants/${restaurantId}`);
@@ -192,13 +186,13 @@ export default function ReviewForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <Label className="mb-2 block">Nota (opcional)</Label>
+        <Label className="mb-2 block font-body font-semibold text-charcoal">Nota (opcional)</Label>
         <StarRating value={rating} onChange={setRating} />
         {rating > 0 && (
           <button
             type="button"
             onClick={() => setRating(0)}
-            className="text-xs text-gray-400 mt-1 hover:text-gray-600"
+            className="text-xs text-sage mt-1 hover:text-charcoal font-body"
           >
             Limpar nota
           </button>
@@ -206,7 +200,7 @@ export default function ReviewForm({
       </div>
 
       <div>
-        <Label htmlFor="comment" className="mb-2 block">
+        <Label htmlFor="comment" className="mb-2 block font-body font-semibold text-charcoal">
           Comentário *
         </Label>
         <Textarea
@@ -216,12 +210,12 @@ export default function ReviewForm({
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           required
-          className="resize-none"
+          className="resize-none border-cream-dark focus:border-olive focus:ring-olive/20 bg-warm-white font-body placeholder:text-sage"
         />
       </div>
 
       <div>
-        <Label className="mb-3 block">Vibe Tags</Label>
+        <Label className="mb-3 block font-body font-semibold text-charcoal">Vibe Tags</Label>
         <div className="flex flex-wrap gap-2">
           {vibeTags.map((tag) => {
             const selected = selectedTags.includes(tag.id);
@@ -231,10 +225,10 @@ export default function ReviewForm({
                 type="button"
                 onClick={() => toggleTag(tag.id)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-sm font-medium border transition-all",
+                  "px-3 py-1.5 rounded-full text-sm font-body font-medium border transition-all",
                   selected
-                    ? "bg-orange-500 text-white border-orange-500"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-orange-300"
+                    ? "bg-olive text-cream border-olive"
+                    : "bg-cream text-charcoal border-cream-dark hover:border-olive-light hover:bg-olive/8"
                 )}
               >
                 {tag.label}
@@ -245,18 +239,20 @@ export default function ReviewForm({
       </div>
 
       <div>
-        <Label className="mb-3 block">Fotos e Vídeos (opcional, máx. 5)</Label>
+        <Label className="mb-3 block font-body font-semibold text-charcoal">
+          Fotos e Vídeos (opcional, máx. 5)
+        </Label>
 
         {files.length > 0 && (
           <div className="grid grid-cols-3 gap-2 mb-3">
             {files.map((fp, i) => (
-              <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-cream-dark">
                 {fp.type === "IMAGE" ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={fp.preview} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                    <Film className="w-8 h-8 text-white opacity-70" />
+                  <div className="w-full h-full flex items-center justify-center bg-charcoal">
+                    <Film className="w-8 h-8 text-cream opacity-70" />
                   </div>
                 )}
                 <button
@@ -267,7 +263,7 @@ export default function ReviewForm({
                   <X className="w-3 h-3 text-white" />
                 </button>
                 {fp.type === "VIDEO" && (
-                  <Badge className="absolute bottom-1 left-1 text-xs py-0 bg-black/60">
+                  <Badge className="absolute bottom-1 left-1 text-xs py-0 bg-black/60 font-body">
                     <Film className="w-2.5 h-2.5 mr-0.5" />
                     Vídeo
                   </Badge>
@@ -290,7 +286,7 @@ export default function ReviewForm({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-orange-300 hover:text-orange-600 transition-colors w-full justify-center"
+              className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-cream-dark rounded-xl text-sm font-body text-sage hover:border-olive hover:text-olive transition-colors w-full justify-center"
             >
               <Upload className="w-4 h-4" />
               <ImageIcon className="w-4 h-4" />
@@ -303,7 +299,7 @@ export default function ReviewForm({
       <Button
         type="submit"
         disabled={submitting}
-        className="w-full bg-orange-600 hover:bg-orange-700"
+        className="w-full bg-burgundy hover:bg-burgundy-light text-cream font-body font-semibold"
       >
         {submitting ? "Enviando..." : "Publicar Avaliação"}
       </Button>

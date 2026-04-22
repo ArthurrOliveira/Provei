@@ -42,49 +42,52 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 bg-white border-r border-orange-100 shadow-sm z-30">
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 bg-burgundy z-30">
       <div className="p-6">
         <Link href="/app/feed" className="flex items-center gap-2">
-          <UtensilsCrossed className="w-6 h-6 text-orange-600" />
-          <span className="text-xl font-bold text-orange-700">Mangut</span>
+          <UtensilsCrossed className="w-6 h-6 text-gold" />
+          <span className="font-display text-xl font-bold text-cream">mangút</span>
         </Link>
       </div>
 
       <nav className="flex-1 px-3 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-              pathname === href || pathname.startsWith(href + "/")
-                ? "bg-orange-100 text-orange-700"
-                : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
-            )}
-          >
-            <Icon className="w-5 h-5" />
-            {label}
-          </Link>
-        ))}
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body font-medium transition-colors",
+                active
+                  ? "bg-olive text-cream"
+                  : "text-cream/70 hover:bg-cream/10 hover:text-cream"
+              )}
+            >
+              <Icon className="w-5 h-5" />
+              {label}
+            </Link>
+          );
+        })}
       </nav>
 
-      <div className="p-4 border-t border-orange-100">
+      <div className="p-4 border-t border-cream/10">
         <div className="flex items-center gap-3 mb-3">
           <Avatar className="w-8 h-8">
             <AvatarImage src={user.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-orange-200 text-orange-700 text-xs">
+            <AvatarFallback className="bg-olive text-cream text-xs font-body">
               {user.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-body font-medium text-cream truncate">
               {user.name}
             </p>
           </div>
         </div>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors w-full"
+          className="flex items-center gap-2 text-sm font-body text-cream/60 hover:text-cream transition-colors w-full"
         >
           <LogOut className="w-4 h-4" />
           Sair

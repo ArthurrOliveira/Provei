@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand colors */
+  --color-burgundy:        #5C191E;
+  --color-burgundy-light:  #7A2D33;
+  --color-burgundy-dark:   #3D1014;
+
+  --color-olive:           #4A5A3C;
+  --color-olive-light:     #6B7D5A;
+  --color-olive-pale:      #A8B89A;
+  --color-olive-dark:      #2E3B26;
+
+  --color-sage:            #8B9E7C;
+  --color-moss:            #3C4F32;
+
+  --color-cream:           #F5EDE3;
+  --color-cream-dark:      #E8DDD0;
+
+  --color-gold:            #C4954A;
+  --color-gold-light:      #E0BE82;
+
+  --color-charcoal:        #2C2826;
+  --color-warm-white:      #FDFAF6;
+
+  /* Typography */
+  --font-display: var(--font-fredoka), 'Fredoka', sans-serif;
+  --font-body:    var(--font-nunito), 'Nunito', sans-serif;
+  --font-sans:    var(--font-nunito), 'Nunito', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #FDFAF6;
+  --foreground: #2C2826;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body, 'Nunito', sans-serif);
 }
+
+/* Botanical animations */
+@keyframes sway {
+  0%, 100% { transform: rotate(-2deg) translateY(0px); }
+  50%       { transform: rotate(2deg) translateY(-12px); }
+}
+@keyframes sway-reverse {
+  0%, 100% { transform: rotate(2deg) translateY(0px); }
+  50%       { transform: rotate(-2deg) translateY(-10px); }
+}
+.animate-sway          { animation: sway 10s ease-in-out infinite; }
+.animate-sway-reverse  { animation: sway-reverse 12s ease-in-out infinite; }
