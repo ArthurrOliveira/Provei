@@ -1,45 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import "leaflet/dist/leaflet.css";
-
-// Fix default marker icons
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
-
-function createIcon(count: number) {
-  const size = count >= 5 ? 44 : count >= 3 ? 38 : 30;
-  const color = count >= 5 ? "#ea580c" : count >= 3 ? "#f97316" : "#fb923c";
-  return L.divIcon({
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:50%;
-      background:${color};border:3px solid white;
-      display:flex;align-items:center;justify-content:center;
-      color:white;font-weight:bold;font-size:${count >= 10 ? 11 : 13}px;
-      box-shadow:0 2px 8px rgba(0,0,0,.35);">
-      ${count}
-    </div>`,
-    className: "",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
-}
-
-function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView([lat, lng], 13);
-  }, [lat, lng, map]);
-  return null;
-}
+import { useEffect, useState, useCallback } from "react";
+import Map, { Source, Layer, Popup, NavigationControl, GeolocateControl } from "react-map-gl/maplibre";
+import type { MapLayerMouseEvent } from "react-map-gl/maplibre";
+import type { GeoJSONSource } from "maplibre-gl";
+import type { FeatureCollection, Point } from "geojson";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 type MapRestaurant = {
   id: string;
@@ -48,66 +14,271 @@ type MapRestaurant = {
   lat: number;
   lng: number;
   reviewCount: number;
+  avgRating: number | null;
   topTags: { id: string; label: string; count: number }[];
 };
 
-export default function MapView({ restaurants }: { restaurants: MapRestaurant[] }) {
-  const [center, setCenter] = useState<[number, number]>([-23.5505, -46.6333]); // São Paulo
+type PopupInfo = {
+  longitude: number;
+  latitude: number;
+  restaurant: MapRestaurant;
+};
+
+const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_API_KEY ?? "";
+const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
+
+function toGeoJSON(restaurants: MapRestaurant[]): FeatureCollection<Point> {
+  return {
+    type: "FeatureCollection",
+    features: restaurants.map((r) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [r.lng, r.lat] },
+      properties: {
+        id: r.id,
+        name: r.name,
+        address: r.address,
+        reviewCount: r.reviewCount,
+        avgRating: r.avgRating,
+        topTags: JSON.stringify(r.topTags),
+      },
+    })),
+  };
+}
+
+export default function MapView({
+  restaurants,
+  focusRestaurant,
+}: {
+  restaurants: MapRestaurant[];
+  focusRestaurant?: { lat: number; lng: number; restaurantId: string | null } | null;
+}) {
+  const [viewState, setViewState] = useState({
+    longitude: focusRestaurant?.lng ?? -46.6333,
+    latitude: focusRestaurant?.lat ?? -23.5505,
+    zoom: focusRestaurant ? 16 : 13,
+  });
+  const [popup, setPopup] = useState<PopupInfo | null>(() => {
+    if (!focusRestaurant?.restaurantId) return null;
+    const r = restaurants.find((r) => r.id === focusRestaurant.restaurantId);
+    if (!r) return null;
+    return { longitude: r.lng, latitude: r.lat, restaurant: r };
+  });
+  const [geolocated, setGeolocated] = useState(!!focusRestaurant);
 
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
-      () => {}
-    );
-  }, []);
+    if (geolocated) return;
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      setViewState((v) => ({
+        ...v,
+        longitude: pos.coords.longitude,
+        latitude: pos.coords.latitude,
+      }));
+      setGeolocated(true);
+    });
+  }, [geolocated]);
+
+  const handleClick = useCallback(
+    (e: MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+
+      // Clique em cluster → zoom in
+      if (feature.properties?.cluster) {
+        const source = e.target.getSource("restaurants") as GeoJSONSource;
+        source.getClusterExpansionZoom(feature.properties.cluster_id).then((zoom) => {
+          if (zoom == null) return;
+          const coords = (feature.geometry as Point).coordinates as [number, number];
+          setViewState((v) => ({ ...v, longitude: coords[0], latitude: coords[1], zoom }));
+        }).catch(() => {});
+        return;
+      }
+
+      // Clique em pin individual → popup
+      const coords = (feature.geometry as Point).coordinates as [number, number];
+      const r: MapRestaurant = {
+        id: feature.properties!.id,
+        name: feature.properties!.name,
+        address: feature.properties!.address,
+        reviewCount: feature.properties!.reviewCount,
+        avgRating: feature.properties!.avgRating ?? null,
+        topTags: JSON.parse(feature.properties!.topTags ?? "[]"),
+        lat: coords[1],
+        lng: coords[0],
+      };
+      setPopup({ longitude: coords[0], latitude: coords[1], restaurant: r });
+    },
+    []
+  );
+
+  const geojson = toGeoJSON(restaurants);
 
   return (
-    <MapContainer
-      center={center}
-      zoom={13}
-      style={{ height: "100%", width: "100%" }}
-      zoomControl={true}
+    <Map
+      {...viewState}
+      onMove={(e) => setViewState(e.viewState)}
+      style={{ width: "100%", height: "100%" }}
+      mapStyle={MAP_STYLE}
+      onClick={handleClick}
+      interactiveLayerIds={["clusters", "unclustered-point"]}
     >
-      <RecenterMap lat={center[0]} lng={center[1]} />
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      <NavigationControl position="top-right" />
+      <GeolocateControl
+        position="top-right"
+        trackUserLocation
       />
-      {restaurants.map((r) => (
-        <Marker
-          key={r.id}
-          position={[r.lat, r.lng]}
-          icon={createIcon(r.reviewCount)}
+
+      <Source
+        id="restaurants"
+        type="geojson"
+        data={geojson}
+        cluster={true}
+        clusterMaxZoom={14}
+        clusterRadius={50}
+      >
+        {/* Círculo de cluster */}
+        <Layer
+          id="clusters"
+          type="circle"
+          filter={["has", "point_count"]}
+          paint={{
+            "circle-color": [
+              "step", ["get", "point_count"],
+              "#A8B89A",   // 1–4
+              5, "#4A5A3C",  // 5–9
+              10, "#5C191E", // 10+
+            ],
+            "circle-radius": [
+              "step", ["get", "point_count"],
+              18,
+              5, 24,
+              10, 30,
+            ],
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#FDFAF6",
+          }}
+        />
+
+        {/* Contagem dentro do cluster */}
+        <Layer
+          id="cluster-count"
+          type="symbol"
+          filter={["has", "point_count"]}
+          layout={{
+            "text-field": "{point_count_abbreviated}",
+            "text-size": 13,
+            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          }}
+          paint={{ "text-color": "#FDFAF6" }}
+        />
+
+        {/* Pin individual */}
+        <Layer
+          id="unclustered-point"
+          type="circle"
+          filter={["!", ["has", "point_count"]]}
+          paint={{
+            "circle-color": [
+              "case",
+              [">", ["get", "reviewCount"], 0], "#5C191E",
+              "#A8B89A",
+            ],
+            "circle-radius": [
+              "case",
+              [">", ["get", "reviewCount"], 0], 14,
+              9,
+            ],
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#FDFAF6",
+          }}
+        />
+
+        {/* Nota média dentro do pin */}
+        <Layer
+          id="unclustered-label"
+          type="symbol"
+          filter={["all", ["!", ["has", "point_count"]], [">", ["get", "reviewCount"], 0], ["!=", ["get", "avgRating"], null]]}
+          layout={{
+            "text-field": ["to-string", ["get", "avgRating"]],
+            "text-size": 11,
+            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          }}
+          paint={{ "text-color": "#FDFAF6" }}
+        />
+      </Source>
+
+      {popup && (
+        <Popup
+          longitude={popup.longitude}
+          latitude={popup.latitude}
+          anchor="bottom"
+          onClose={() => setPopup(null)}
+          closeButton={true}
+          maxWidth="240px"
         >
-          <Popup>
-            <div className="min-w-[180px]">
-              <p className="font-semibold text-sm">{r.name}</p>
-              <p className="text-xs text-gray-500 mb-1">{r.address}</p>
-              <p className="text-xs text-gray-400 mb-2">
-                {r.reviewCount} avaliação{r.reviewCount !== 1 ? "ões" : ""} de amigos
-              </p>
-              {r.topTags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {r.topTags.map((t) => (
-                    <span
-                      key={t.id}
-                      className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full"
-                    >
-                      {t.label}
+          <div style={{ fontFamily: "Nunito, sans-serif", padding: "4px 0" }}>
+            <p style={{ fontWeight: 700, fontSize: 14, color: "#2C2826", margin: "0 0 3px" }}>
+              {popup.restaurant.name}
+            </p>
+            <p style={{ fontSize: 12, color: "#9E8E7E", margin: "0 0 6px" }}>
+              {popup.restaurant.address}
+            </p>
+
+            {popup.restaurant.reviewCount > 0 ? (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  {popup.restaurant.avgRating != null && (
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#5C191E" }}>
+                      ★ {popup.restaurant.avgRating}
                     </span>
-                  ))}
+                  )}
+                  <span style={{ fontSize: 12, color: "#9E8E7E" }}>
+                    ({popup.restaurant.reviewCount} avaliação{popup.restaurant.reviewCount !== 1 ? "ões" : ""})
+                  </span>
                 </div>
-              )}
-              <a
-                href={`/app/restaurants/${r.id}`}
-                className="block text-center text-xs bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600"
-              >
-                Ver restaurante
-              </a>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+                {popup.restaurant.topTags.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+                    {popup.restaurant.topTags.map((t) => (
+                      <span
+                        key={t.id}
+                        style={{
+                          fontSize: 11,
+                          background: "#EEF2EA",
+                          color: "#4A5A3C",
+                          padding: "2px 8px",
+                          borderRadius: 99,
+                        }}
+                      >
+                        {t.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p style={{ fontSize: 12, color: "#A8B89A", margin: "0 0 8px" }}>
+                Nenhuma avaliação ainda
+              </p>
+            )}
+
+            <a
+              href={`/app/restaurants/${popup.restaurant.id}`}
+              style={{
+                display: "block",
+                textAlign: "center",
+                fontSize: 12,
+                fontWeight: 600,
+                background: "#5C191E",
+                color: "#F5EDE3",
+                padding: "6px 12px",
+                borderRadius: 8,
+                textDecoration: "none",
+              }}
+            >
+              Ver restaurante →
+            </a>
+          </div>
+        </Popup>
+      )}
+    </Map>
   );
 }

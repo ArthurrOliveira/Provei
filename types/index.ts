@@ -87,6 +87,7 @@ export type ListDetailItem = {
   restaurantId: string;
   note: string | null;
   position: number;
+  userRating: number | null;
   restaurant: {
     id: string;
     name: string;

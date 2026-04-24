@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "api.maptiler.com" },
+      // Google Photos mantidos para restaurantes já cadastrados
       { protocol: "https", hostname: "places.googleapis.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "maps.googleapis.com" },

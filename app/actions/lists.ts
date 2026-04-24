@@ -141,6 +141,19 @@ export async function getListById(
 
     const restaurantIds = list.items.map((i) => i.restaurantId);
 
+    // Rating do usuário atual em cada restaurante da lista
+    const userRatings: Record<string, number | null> =
+      currentUserId && restaurantIds.length > 0
+        ? Object.fromEntries(
+            (
+              await prisma.review.findMany({
+                where: { userId: currentUserId, restaurantId: { in: restaurantIds } },
+                select: { restaurantId: true, rating: true },
+              })
+            ).map((r) => [r.restaurantId, r.rating])
+          )
+        : {};
+
     const reviewVibeTags =
       restaurantIds.length > 0
         ? await prisma.reviewVibeTag.findMany({
@@ -189,6 +202,7 @@ export async function getListById(
           restaurantId: item.restaurantId,
           note: item.note,
           position: item.position,
+          userRating: userRatings[item.restaurantId] ?? null,
           restaurant: {
             id: item.restaurant.id,
             name: item.restaurant.name,
@@ -285,6 +299,35 @@ export async function updateList(
     revalidatePath(`/app/lists/${listId}`);
     revalidatePath(`/lists/${listId}`);
     revalidatePath(`/app/profile/${user.id}`);
+    return { success: true, data: undefined };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+}
+
+export async function addRestaurantToList(
+  listId: string,
+  restaurantId: string
+): Promise<ActionResult<void>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: "Não autenticado" };
+
+    const list = await prisma.restaurantList.findUnique({ where: { id: listId } });
+    if (!list || list.userId !== user.id) return { success: false, error: "Sem permissão" };
+
+    const already = await prisma.restaurantListItem.findFirst({
+      where: { listId, restaurantId },
+    });
+    if (already) return { success: false, error: "Restaurante já está na lista" };
+
+    const count = await prisma.restaurantListItem.count({ where: { listId } });
+    await prisma.restaurantListItem.create({
+      data: { listId, restaurantId, position: count },
+    });
+
+    revalidatePath(`/app/lists/${listId}`);
+    revalidatePath(`/lists/${listId}`);
     return { success: true, data: undefined };
   } catch (e) {
     return { success: false, error: String(e) };

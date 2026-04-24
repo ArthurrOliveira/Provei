@@ -23,6 +23,23 @@
   --color-charcoal:        #2C2826;
   --color-warm-white:      #FDFAF6;
 
+  /* Semantic tokens — usados pelo componente Button e shadcn/ui */
+  --color-primary:              #5C191E;
+  --color-primary-foreground:   #F5EDE3;
+  --color-secondary:            #4A5A3C;
+  --color-secondary-foreground: #F5EDE3;
+  --color-accent:               #6B7D5A;
+  --color-accent-foreground:    #F5EDE3;
+  --color-destructive:          #b91c1c;
+  --color-destructive-foreground: #fff;
+  --color-muted:                #E8DDD0;
+  --color-muted-foreground:     #6b6560;
+  --color-border:               #D4C9BC;
+  --color-input:                #D4C9BC;
+  --color-ring:                 #5C191E;
+  --color-background:           #FDFAF6;
+  --color-foreground:           #2C2826;
+
   /* Typography */
   --font-display: var(--font-fredoka), 'Fredoka', sans-serif;
   --font-body:    var(--font-nunito), 'Nunito', sans-serif;

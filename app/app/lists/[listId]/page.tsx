@@ -10,7 +10,8 @@ import LikeButton from "@/components/lists/LikeButton";
 import ShareButton from "@/components/lists/ShareButton";
 import DeleteListButton from "@/components/lists/DeleteListButton";
 import { formatRelativeTime } from "@/lib/utils";
-import { ChevronLeft, MapPin, Pencil, Lock, Map, BookMarked } from "lucide-react";
+import { ChevronLeft, MapPin, Pencil, Lock, Map, BookMarked, Star } from "lucide-react";
+import AddRestaurantInline from "@/components/lists/AddRestaurantInline";
 
 export default async function ListDetailPage({
   params,
@@ -99,17 +100,12 @@ export default async function ListDetailPage({
         </div>
       </div>
 
+      {isOwner && <AddRestaurantInline listId={list.id} />}
+
       {list.items.length === 0 ? (
-        <div className="text-center py-12 space-y-3">
+        <div className="text-center py-12 space-y-2">
           <BookMarked className="w-10 h-10 text-cream-dark mx-auto" />
           <p className="font-body text-sage">Nenhum restaurante nesta lista ainda.</p>
-          {isOwner && (
-            <Link href={`/app/lists/${list.id}/edit`}>
-              <Button variant="outline" size="sm" className="font-body border-cream-dark text-charcoal hover:bg-cream">
-                Adicionar restaurantes
-              </Button>
-            </Link>
-          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -117,7 +113,14 @@ export default async function ListDetailPage({
             <div key={item.restaurantId} className="bg-warm-white rounded-xl border border-cream-dark overflow-hidden hover:border-burgundy/20 transition-colors">
               <div className="flex gap-3 p-4">
                 <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                  <span className="font-body text-xs font-bold text-sage w-6 text-center">{idx + 1}</span>
+                  {item.userRating != null ? (
+                    <div className="flex items-center gap-0.5">
+                      <Star className="w-3.5 h-3.5 fill-gold text-gold" />
+                      <span className="font-body text-xs font-bold text-charcoal">{item.userRating}</span>
+                    </div>
+                  ) : (
+                    <Star className="w-3.5 h-3.5 text-cream-dark" />
+                  )}
                   {item.restaurant.thumbnailUrl ? (
                     <div className="relative w-14 h-14 rounded-lg overflow-hidden">
                       <Image src={item.restaurant.thumbnailUrl} alt={item.restaurant.name} fill className="object-cover" sizes="56px" />

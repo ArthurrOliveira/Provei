@@ -33,7 +33,7 @@ export default function RestaurantSearchPage() {
   // Manual create dialog
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", address: "", observacao: "", lat: "", lng: "" });
+  const [form, setForm] = useState({ name: "", address: "", observacao: "" });
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -46,19 +46,18 @@ export default function RestaurantSearchPage() {
   }
 
   function openCreate() {
-    setForm({ name: query, address: "", observacao: "", lat: "", lng: "" });
+    setForm({ name: query, address: "", observacao: "" });
     setOpen(true);
   }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setCreating(true);
+
     const res = await createRestaurant({
       name: form.name,
       address: form.address,
       observacao: form.observacao || undefined,
-      lat: form.lat ? parseFloat(form.lat) : undefined,
-      lng: form.lng ? parseFloat(form.lng) : undefined,
     });
     setCreating(false);
     if (res.success) {
@@ -188,7 +187,7 @@ function ManualCreateDialog({
   creating,
   onSubmit,
 }: {
-  form: { name: string; address: string; observacao: string; lat: string; lng: string };
+  form: { name: string; address: string; observacao: string };
   setForm: (f: typeof form) => void;
   creating: boolean;
   onSubmit: (e: React.FormEvent) => void;
@@ -226,28 +225,9 @@ function ManualCreateDialog({
             className="mt-1 border-cream-dark focus:border-olive font-body placeholder:text-sage"
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="font-body font-semibold text-charcoal">Latitude</Label>
-            <Input
-              type="number"
-              step="any"
-              value={form.lat}
-              onChange={(e) => setForm({ ...form, lat: e.target.value })}
-              className="mt-1 border-cream-dark focus:border-olive font-body"
-            />
-          </div>
-          <div>
-            <Label className="font-body font-semibold text-charcoal">Longitude</Label>
-            <Input
-              type="number"
-              step="any"
-              value={form.lng}
-              onChange={(e) => setForm({ ...form, lng: e.target.value })}
-              className="mt-1 border-cream-dark focus:border-olive font-body"
-            />
-          </div>
-        </div>
+        <p className="font-body text-xs text-sage">
+          As coordenadas serão preenchidas automaticamente pelo endereço.
+        </p>
         <Button
           type="submit"
           className="w-full bg-burgundy hover:bg-burgundy-light text-cream font-body font-semibold"

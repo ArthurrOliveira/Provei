@@ -16,6 +16,7 @@ type MapRestaurant = {
   lat: number;
   lng: number;
   reviewCount: number;
+  avgRating: number | null;
   topTags: { id: string; label: string; count: number }[];
 };
 
@@ -23,10 +24,12 @@ export default function MapClient({
   restaurants,
   vibeTags,
   listTitle,
+  focusRestaurant,
 }: {
   restaurants: MapRestaurant[];
   vibeTags: VibeTag[];
   listTitle?: string;
+  focusRestaurant?: { lat: number; lng: number; restaurantId: string | null } | null;
 }) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showSheet, setShowSheet] = useState(false);
@@ -72,7 +75,7 @@ export default function MapClient({
         ))}
       </div>
 
-      <MapView restaurants={filtered} />
+      <MapView restaurants={filtered} focusRestaurant={focusRestaurant} />
 
       {/* Mobile bottom sheet */}
       <div

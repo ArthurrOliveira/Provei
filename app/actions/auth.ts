@@ -5,13 +5,16 @@ import { prisma } from "@/lib/prisma";
 
 export async function getCurrentUser() {
   if (process.env.BYPASS_AUTH === "true") {
-    return {
-      id: "preview-user",
-      name: "Preview",
-      email: "preview@mangut.dev",
-      avatarUrl: null,
-      createdAt: new Date(),
-    };
+    return prisma.user.upsert({
+      where: { email: "preview@mangut.dev" },
+      update: {},
+      create: {
+        id: "preview-user",
+        name: "Preview",
+        email: "preview@mangut.dev",
+        avatarUrl: null,
+      },
+    });
   }
 
   try {

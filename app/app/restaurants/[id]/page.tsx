@@ -16,7 +16,7 @@ import QuickReviewButton from "@/components/review/QuickReviewModal";
 import FriendsWhoWent from "@/components/restaurants/FriendsWhoWent";
 import RestaurantGoogleInfo from "@/components/restaurants/RestaurantGoogleInfo";
 import GooglePhotosCarousel from "@/components/restaurants/GooglePhotosCarousel";
-import { MapPin, Star, PenLine } from "lucide-react";
+import { MapPin, Star, PenLine, Map } from "lucide-react";
 
 export default async function RestaurantPage({
   params,
@@ -67,6 +67,17 @@ export default async function RestaurantPage({
             <MapPin className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">{restaurant.address}</span>
           </p>
+
+          {/* Ver no mapa */}
+          {restaurant.lat && restaurant.lng && (
+            <Link
+              href={`/app/map?lat=${restaurant.lat}&lng=${restaurant.lng}&restaurantId=${id}`}
+              className="inline-flex items-center gap-1 font-body text-xs text-olive hover:text-olive-dark mt-1"
+            >
+              <Map className="w-3.5 h-3.5" />
+              Ver no mapa
+            </Link>
+          )}
 
           {/* Ratings row */}
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">

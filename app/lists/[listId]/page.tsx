@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatRelativeTime } from "@/lib/utils";
-import { MapPin, BookMarked, UtensilsCrossed } from "lucide-react";
+import { MapPin, BookMarked, UtensilsCrossed, Star } from "lucide-react";
 
 export async function generateMetadata({
   params,
@@ -110,11 +110,18 @@ export default async function PublicListPage({
           </div>
         ) : (
           <div className="space-y-3">
-            {list.items.map((item, idx) => (
+            {list.items.map((item) => (
               <div key={item.restaurantId} className="bg-warm-white rounded-xl border border-cream-dark overflow-hidden">
                 <div className="flex gap-3 p-4">
                   <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                    <span className="font-body text-xs font-bold text-sage w-6 text-center">{idx + 1}</span>
+                    {item.userRating != null ? (
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-3.5 h-3.5 fill-gold text-gold" />
+                        <span className="font-body text-xs font-bold text-charcoal">{item.userRating}</span>
+                      </div>
+                    ) : (
+                      <Star className="w-3.5 h-3.5 text-cream-dark" />
+                    )}
                     {item.restaurant.thumbnailUrl ? (
                       <div className="relative w-14 h-14 rounded-lg overflow-hidden">
                         <Image src={item.restaurant.thumbnailUrl} alt={item.restaurant.name} fill className="object-cover" sizes="56px" />
