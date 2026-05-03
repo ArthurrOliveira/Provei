@@ -69,10 +69,10 @@ export default function FeedClient({
             variant={mode === "friends" ? "default" : "outline"}
             onClick={() => handleModeChange("friends")}
             className={cn(
-              "font-body",
+              "font-body transition-colors duration-200",
               mode === "friends"
                 ? "bg-burgundy hover:bg-burgundy-light text-cream"
-                : "border-cream-dark text-charcoal hover:bg-cream"
+                : "border-cream-dark text-charcoal hover:bg-cream-dark hover:border-sage"
             )}
           >
             <Users className="w-3.5 h-3.5 mr-1" />
@@ -83,10 +83,10 @@ export default function FeedClient({
             variant={mode === "fof" ? "default" : "outline"}
             onClick={() => handleModeChange("fof")}
             className={cn(
-              "font-body",
+              "font-body transition-colors duration-200",
               mode === "fof"
                 ? "bg-burgundy hover:bg-burgundy-light text-cream"
-                : "border-cream-dark text-charcoal hover:bg-cream"
+                : "border-cream-dark text-charcoal hover:bg-cream-dark hover:border-sage"
             )}
           >
             Amigos de amigos
@@ -125,7 +125,7 @@ export default function FeedClient({
           <p className="text-sm">Siga amigos para ver as avaliações deles aqui!</p>
           <Button
             variant="outline"
-            className="border-burgundy/40 text-burgundy hover:bg-burgundy hover:text-cream font-body"
+            className="border-burgundy/40 text-burgundy hover:bg-burgundy hover:text-cream font-body transition-colors duration-200"
             onClick={() => window.location.assign("/app/friends")}
           >
             Encontrar amigos

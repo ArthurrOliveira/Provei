@@ -105,7 +105,7 @@ export default function RestaurantSearchPage() {
             className="pl-9 border-cream-dark focus:border-olive focus:ring-olive/20 bg-warm-white font-body placeholder:text-sage"
           />
         </div>
-        <Button type="submit" disabled={loading} className="bg-burgundy hover:bg-burgundy-light text-cream font-body">
+        <Button type="submit" disabled={loading} className="bg-burgundy hover:bg-burgundy-light text-cream font-body transition-colors duration-200">
           Buscar
         </Button>
       </form>

@@ -16,6 +16,7 @@ type MapRestaurant = {
   reviewCount: number;
   avgRating: number | null;
   topTags: { id: string; label: string; count: number }[];
+  googlePlaceId: string | null;
 };
 
 type PopupInfo = {
@@ -39,6 +40,7 @@ function toGeoJSON(restaurants: MapRestaurant[]): FeatureCollection<Point> {
         address: r.address,
         reviewCount: r.reviewCount,
         avgRating: r.avgRating,
+        googlePlaceId: r.googlePlaceId,
         topTags: JSON.stringify(r.topTags),
       },
     })),
@@ -82,7 +84,6 @@ export default function MapView({
       const feature = e.features?.[0];
       if (!feature) return;
 
-      // Clique em cluster → zoom in
       if (feature.properties?.cluster) {
         const source = e.target.getSource("restaurants") as GeoJSONSource;
         source.getClusterExpansionZoom(feature.properties.cluster_id).then((zoom) => {
@@ -93,7 +94,6 @@ export default function MapView({
         return;
       }
 
-      // Clique em pin individual → popup
       const coords = (feature.geometry as Point).coordinates as [number, number];
       const r: MapRestaurant = {
         id: feature.properties!.id,
@@ -102,6 +102,7 @@ export default function MapView({
         reviewCount: feature.properties!.reviewCount,
         avgRating: feature.properties!.avgRating ?? null,
         topTags: JSON.parse(feature.properties!.topTags ?? "[]"),
+        googlePlaceId: feature.properties!.googlePlaceId ?? null,
         lat: coords[1],
         lng: coords[0],
       };
@@ -135,7 +136,6 @@ export default function MapView({
         clusterMaxZoom={14}
         clusterRadius={50}
       >
-        {/* Círculo de cluster */}
         <Layer
           id="clusters"
           type="circle"
@@ -143,9 +143,9 @@ export default function MapView({
           paint={{
             "circle-color": [
               "step", ["get", "point_count"],
-              "#A8B89A",   // 1–4
-              5, "#4A5A3C",  // 5–9
-              10, "#5C191E", // 10+
+              "#A8B89A",
+              5, "#4A5A3C",
+              10, "#5C191E",
             ],
             "circle-radius": [
               "step", ["get", "point_count"],
@@ -158,7 +158,6 @@ export default function MapView({
           }}
         />
 
-        {/* Contagem dentro do cluster */}
         <Layer
           id="cluster-count"
           type="symbol"
@@ -171,7 +170,6 @@ export default function MapView({
           paint={{ "text-color": "#FDFAF6" }}
         />
 
-        {/* Pin individual */}
         <Layer
           id="unclustered-point"
           type="circle"
@@ -192,7 +190,6 @@ export default function MapView({
           }}
         />
 
-        {/* Nota média dentro do pin */}
         <Layer
           id="unclustered-label"
           type="symbol"

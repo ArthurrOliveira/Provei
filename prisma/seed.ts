@@ -1,6 +1,14 @@
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
-const prisma = new PrismaClient();
+dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const VIBE_TAGS = [
   "Bom para date",
@@ -91,6 +99,17 @@ const BADGES = [
   },
 ];
 
+const FAKE_USERS = [
+  { name: "Ana Souza",         email: "ana.souza@mangut.fake" },
+  { name: "Carlos Mendes",     email: "carlos.mendes@mangut.fake" },
+  { name: "Beatriz Lima",      email: "bia.lima@mangut.fake" },
+  { name: "Rafael Costa",      email: "rafael.costa@mangut.fake" },
+  { name: "Fernanda Oliveira", email: "fernanda.oliveira@mangut.fake" },
+  { name: "Lucas Pereira",     email: "lucas.pereira@mangut.fake" },
+  { name: "Juliana Santos",    email: "juliana.santos@mangut.fake" },
+  { name: "Thiago Ferreira",   email: "thiago.ferreira@mangut.fake" },
+];
+
 async function main() {
   console.log("Seeding vibe tags...");
   for (const label of VIBE_TAGS) {
@@ -113,6 +132,16 @@ async function main() {
       },
       create: badge,
     });
+  }
+
+  console.log("Seeding fake users...");
+  for (const u of FAKE_USERS) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: { name: u.name, email: u.email },
+    });
+    console.log(`  ✓ ${user.name} (${user.id})`);
   }
 
   console.log("Done!");

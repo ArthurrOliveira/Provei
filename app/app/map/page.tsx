@@ -8,7 +8,7 @@ import MapClient from "@/components/map/MapClient";
 type RawReview = { rating: number | null; vibeTags: { vibeTag: { id: string; label: string } }[] };
 
 function buildMapRestaurant(
-  r: { id: string; name: string; address: string; lat: number | null; lng: number | null; reviews: RawReview[] }
+  r: { id: string; name: string; address: string; lat: number | null; lng: number | null; googlePlaceId: string | null; reviews: RawReview[] }
 ) {
   const vibeTagCounts: Record<string, { label: string; count: number }> = {};
   for (const review of r.reviews) {
@@ -36,6 +36,7 @@ function buildMapRestaurant(
     reviewCount: r.reviews.length,
     avgRating,
     topTags,
+    googlePlaceId: r.googlePlaceId,
   };
 }
 
@@ -62,7 +63,6 @@ export default async function MapPage({
 
   let listTitle: string | undefined;
 
-  // If filtering by list, fetch only restaurants from that list (with coords)
   if (listId) {
     const list = await prisma.restaurantList.findUnique({
       where: { id: listId },
@@ -110,7 +110,6 @@ export default async function MapPage({
     }
   }
 
-  // Default: all restaurants with coordinates
   const restaurants = await prisma.restaurant.findMany({
     where: { lat: { not: null }, lng: { not: null } },
     include: {

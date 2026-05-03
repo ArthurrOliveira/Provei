@@ -31,15 +31,15 @@ export default function LandingPage() {
         <div className="space-y-5">
           <div className="inline-flex items-center gap-2 bg-cream/10 border border-cream/20 rounded-full px-4 py-1.5 text-cream/80 text-sm font-body">
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-            Avaliações de quem você conhece
+            Avaliações de quem você confia e conhece
           </div>
           <h1 className="font-display text-5xl md:text-6xl font-bold text-warm-white leading-tight">
             Descubra restaurantes{" "}
             <span className="text-gold">com quem você confia</span>
           </h1>
           <p className="font-body text-xl text-sage max-w-2xl mx-auto leading-relaxed">
-            Sem strangers, sem reviews compradas.
-            Só a opinião de quem você conhece.
+            Chega de dicas de desconhecidos e reviews compradas.
+            Só a opinião de quem você realmente conhece.
           </p>
         </div>
 
@@ -82,6 +82,21 @@ export default function LandingPage() {
               <p className="font-body text-sm text-sage leading-relaxed">{desc}</p>
             </div>
           ))}
+        </div>
+
+        {/* Sobre / Visão */}
+        <div className="mt-20 max-w-2xl mx-auto text-center space-y-4 pb-10">
+          <h2 className="font-display text-2xl font-bold text-cream">Nossa visão</h2>
+          <p className="font-body text-sage leading-relaxed">
+            Acreditamos que a melhor recomendação de restaurante não vem de um algoritmo,
+            nem de um influencer patrocinado — vem de um amigo que foi lá ontem e te contou
+            tudo de verdade.
+          </p>
+          <p className="font-body text-sage leading-relaxed">
+            O Mangut nasceu para resgatar isso: um círculo de confiança onde cada avaliação
+            tem nome, rosto e contexto. Nada de estrelas anônimas. Só o que importa,
+            de quem você conhece.
+          </p>
         </div>
       </main>
     </div>

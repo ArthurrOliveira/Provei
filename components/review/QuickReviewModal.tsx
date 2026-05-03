@@ -225,7 +225,7 @@ function QuickReviewModal({
     <>
       {showConfetti && <Confetti />}
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md w-full max-h-[88vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md w-full max-h-[88vh] overflow-y-auto bg-warm-white text-charcoal">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-display">
               <Zap className="w-5 h-5 text-gold" />

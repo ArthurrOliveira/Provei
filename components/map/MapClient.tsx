@@ -18,6 +18,7 @@ type MapRestaurant = {
   reviewCount: number;
   avgRating: number | null;
   topTags: { id: string; label: string; count: number }[];
+  googlePlaceId: string | null;
 };
 
 export default function MapClient({

@@ -5,7 +5,6 @@ import { ActionResult } from "@/types";
 import { Prisma } from "@prisma/client";
 import type { Restaurant } from "@prisma/client";
 
-
 // ── Local DB search ────────────────────────────────────────────────────────────
 
 export async function searchRestaurants(
@@ -65,6 +64,40 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
     return { lat: feature.properties.lat, lng: feature.properties.lon };
   } catch {
     return null;
+  }
+}
+
+// ── Find or create restaurant from OSM data ───────────────────────────────────
+
+export async function findOrCreateOsmRestaurant(data: {
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+}): Promise<ActionResult<{ id: string }>> {
+  try {
+    // Match by name (case-insensitive) + proximity (~300m)
+    const candidates = await prisma.restaurant.findMany({
+      where: { name: { equals: data.name, mode: "insensitive" } },
+      select: { id: true, lat: true, lng: true },
+    });
+
+    for (const r of candidates) {
+      if (r.lat !== null && r.lng !== null) {
+        const dLat = Math.abs(r.lat - data.lat);
+        const dLng = Math.abs(r.lng - data.lng);
+        if (dLat < 0.003 && dLng < 0.003) {
+          return { success: true, data: { id: r.id } };
+        }
+      }
+    }
+
+    const restaurant = await prisma.restaurant.create({
+      data: { name: data.name, address: data.address, lat: data.lat, lng: data.lng },
+    });
+    return { success: true, data: { id: restaurant.id } };
+  } catch (e) {
+    return { success: false, error: String(e) };
   }
 }
 

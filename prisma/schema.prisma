@@ -15,15 +15,17 @@ model User {
   avatarUrl String?
   createdAt DateTime @default(now())
 
-  reviews         Review[]
-  following       Follow[]            @relation("Follower")
-  followers       Follow[]            @relation("Following")
-  mediaLikes      MediaLike[]
-  friendGroups    FriendGroup[]
-  groupMembers    FriendGroupMember[]
-  badges          UserBadge[]
-  restaurantLists RestaurantList[]
-  listLikes       ListLike[]
+  reviews                  Review[]
+  following                Follow[]            @relation("Follower")
+  followers                Follow[]            @relation("Following")
+  mediaLikes               MediaLike[]
+  friendGroups             FriendGroup[]
+  groupMembers             FriendGroupMember[]
+  badges                   UserBadge[]
+  restaurantLists          RestaurantList[]
+  listLikes                ListLike[]
+  receivedGroupInvitations GroupInvitation[]   @relation("ReceivedGroupInvitations")
+  sentGroupInvitations     GroupInvitation[]   @relation("SentGroupInvitations")
 
   @@schema("mangut")
 }
@@ -134,13 +136,15 @@ model MediaLike {
 }
 
 model FriendGroup {
-  id        String   @id @default(uuid())
-  ownerId   String
-  name      String
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  ownerId    String
+  name       String
+  inviteCode String?  @unique
+  createdAt  DateTime @default(now())
 
-  owner   User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  members FriendGroupMember[]
+  owner       User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     FriendGroupMember[]
+  invitations GroupInvitation[]
 
   @@schema("mangut")
 }
@@ -154,6 +158,29 @@ model FriendGroupMember {
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([groupId, userId])
+  @@schema("mangut")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+
+  @@schema("mangut")
+}
+
+model GroupInvitation {
+  id        String           @id @default(uuid())
+  groupId   String
+  invitedId String
+  invitedBy String
+  status    InvitationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  group   FriendGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  invited User        @relation("ReceivedGroupInvitations", fields: [invitedId], references: [id], onDelete: Cascade)
+  sender  User        @relation("SentGroupInvitations", fields: [invitedBy], references: [id], onDelete: Cascade)
+
   @@schema("mangut")
 }
 

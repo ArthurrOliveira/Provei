@@ -57,6 +57,10 @@ body {
   font-family: var(--font-body, 'Nunito', sans-serif);
 }
 
+button, [role="button"] {
+  cursor: pointer;
+}
+
 /* Botanical animations */
 @keyframes sway {
   0%, 100% { transform: rotate(-2deg) translateY(0px); }
