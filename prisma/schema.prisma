@@ -67,12 +67,13 @@ model Restaurant {
 }
 
 model Review {
-  id           String   @id @default(uuid())
-  userId       String
-  restaurantId String
-  rating       Int?
-  comment      String
-  createdAt    DateTime @default(now())
+  id                        String   @id @default(uuid())
+  userId                    String
+  restaurantId              String
+  rating                    Int?
+  comment                   String
+  includeInPublicAggregates Boolean  @default(true)
+  createdAt                 DateTime @default(now())
 
   user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)

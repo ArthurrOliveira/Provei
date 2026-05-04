@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Map, Search, Users, User, BookMarked } from "lucide-react";
+import {
+  Home,
+  Map,
+  Search,
+  Users,
+  User,
+  BookMarked,
+  Info,
+  LogIn,
+} from "lucide-react";
 
-const navItems = [
+const authedNavItems = [
   { href: "/app/feed", label: "Feed", icon: Home },
   { href: "/app/map", label: "Mapa", icon: Map },
   { href: "/app/lists", label: "Listas", icon: BookMarked },
@@ -14,21 +23,39 @@ const navItems = [
   { href: "/app/profile/me", label: "Perfil", icon: User },
 ];
 
-export default function BottomNav() {
+const publicNavItems = [
+  { href: "/app/restaurants/search", label: "Buscar", icon: Search },
+  { href: "/explore/map", label: "Mapa", icon: Map },
+  { href: "/", label: "Sobre", icon: Info },
+  { href: "/login", label: "Entrar", icon: LogIn },
+];
+
+export default function BottomNav({
+  user,
+}: {
+  user?: { id: string } | null;
+}) {
   const pathname = usePathname();
+  const navItems = user ? authedNavItems : publicNavItems;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-warm-white border-t border-cream-dark z-30 safe-area-bottom">
       <div className="flex">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+          const active =
+            pathname === href || pathname.startsWith(href + "/");
+          const isEntrar = label === "Entrar";
           return (
             <Link
               key={href}
               href={href}
               className={cn(
                 "flex-1 flex flex-col items-center gap-1 py-2 text-xs font-body transition-colors",
-                active ? "text-burgundy" : "text-sage"
+                isEntrar
+                  ? "text-burgundy font-semibold"
+                  : active
+                  ? "text-burgundy"
+                  : "text-sage"
               )}
             >
               <Icon className="w-5 h-5" />

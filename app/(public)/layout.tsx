@@ -1,15 +1,13 @@
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/actions/auth";
 import Sidebar from "@/components/layout/Sidebar";
 import BottomNav from "@/components/layout/BottomNav";
 
-export default async function AppLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
 
   return (
     <div className="flex min-h-screen bg-warm-white">

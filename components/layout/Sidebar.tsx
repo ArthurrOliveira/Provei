@@ -15,9 +15,12 @@ import {
   LogOut,
   UtensilsCrossed,
   BookMarked,
+  Info,
+  LogIn,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const navItems = [
+const authedNavItems = [
   { href: "/app/feed", label: "Feed", icon: Home },
   { href: "/app/map", label: "Mapa", icon: Map },
   { href: "/app/lists", label: "Listas", icon: BookMarked },
@@ -26,10 +29,16 @@ const navItems = [
   { href: "/app/profile/me", label: "Meu Perfil", icon: User },
 ];
 
+const publicNavItems = [
+  { href: "/app/restaurants/search", label: "Buscar", icon: Search },
+  { href: "/explore/map", label: "Mapa", icon: Map },
+  { href: "/", label: "Sobre", icon: Info },
+];
+
 export default function Sidebar({
   user,
 }: {
-  user: { id: string; name: string; avatarUrl: string | null };
+  user: { id: string; name: string; avatarUrl: string | null } | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -41,18 +50,26 @@ export default function Sidebar({
     router.refresh();
   }
 
+  const navItems = user ? authedNavItems : publicNavItems;
+
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 bg-burgundy z-30">
       <div className="p-6">
-        <Link href="/app/feed" className="flex items-center gap-2">
+        <Link
+          href={user ? "/app/feed" : "/"}
+          className="flex items-center gap-2"
+        >
           <UtensilsCrossed className="w-6 h-6 text-gold" />
-          <span className="font-display text-xl font-bold text-cream">mangút</span>
+          <span className="font-display text-xl font-bold text-cream">
+            mangút
+          </span>
         </Link>
       </div>
 
       <nav className="flex-1 px-3 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+          const active =
+            pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
               key={href}
@@ -72,26 +89,37 @@ export default function Sidebar({
       </nav>
 
       <div className="p-4 border-t border-cream/10">
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={user.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-olive text-cream text-xs font-body">
-              {user.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-body font-medium text-cream truncate">
-              {user.name}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-2 text-sm font-body text-cream/60 hover:text-cream transition-colors w-full"
-        >
-          <LogOut className="w-4 h-4" />
-          Sair
-        </button>
+        {user ? (
+          <>
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={user.avatarUrl ?? undefined} />
+                <AvatarFallback className="bg-olive text-cream text-xs font-body">
+                  {user.name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-body font-medium text-cream truncate">
+                  {user.name}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 text-sm font-body text-cream/60 hover:text-cream transition-colors w-full"
+            >
+              <LogOut className="w-4 h-4" />
+              Sair
+            </button>
+          </>
+        ) : (
+          <Link href="/login">
+            <Button className="w-full bg-cream text-burgundy hover:bg-cream-dark font-body font-semibold gap-2">
+              <LogIn className="w-4 h-4" />
+              Entrar
+            </Button>
+          </Link>
+        )}
       </div>
     </aside>
   );
